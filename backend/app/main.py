@@ -23,8 +23,9 @@ def get_application() -> FastAPI:
     application.include_router(health.router)
     
     # Placeholders for future routers (uncomment when implemented)
-    from app.routes import predict
+    from app.routes import predict, history
     application.include_router(predict.router)
+    application.include_router(history.router)
     # from app.routes import models, metrics
     # application.include_router(models.router, prefix=settings.API_V1_STR)
     # application.include_router(metrics.router, prefix=settings.API_V1_STR)

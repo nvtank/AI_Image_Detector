@@ -17,3 +17,10 @@ class PredictResponse(BaseModel):
 class PredictUrlRequest(BaseModel):
     image_url: str
 
+class PredictionLog(PredictResponse):
+    id: int
+    source_type: str
+    image_name: str | None = None
+    image_url: str | None = None
+    created_at: str
+

@@ -1,6 +1,7 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException
 from app.schemas import PredictResponse, PredictUrlRequest
 from app.services.inference_service import inference_service
+from app.services.logging_service import logging_service
 from app.config import settings
 from PIL import Image
 import io
@@ -28,6 +29,20 @@ async def predict_image(file: UploadFile = File(...)):
         
         # Call the inference service
         result = inference_service.predict(image)
+        
+        # Log prediction
+        logging_service.log_prediction(
+            source_type="upload",
+            image_name=file.filename,
+            image_url=None,
+            predicted_label=result["label"],
+            confidence=result["confidence"],
+            fake_probability=result["fake_probability"],
+            real_probability=result["real_probability"],
+            model_name=result["model_used"],
+            model_version=settings.VERSION,
+            processing_time_ms=result["processing_time_ms"]
+        )
         
         # Prepare response mapping
         return PredictResponse(
@@ -74,6 +89,19 @@ async def predict_image_url(request: PredictUrlRequest):
             raise HTTPException(status_code=400, detail="Downloaded file is not a valid image format for PIL")
             
         result = inference_service.predict(image)
+        
+        logging_service.log_prediction(
+            source_type="url",
+            image_name=None,
+            image_url=request.image_url,
+            predicted_label=result["label"],
+            confidence=result["confidence"],
+            fake_probability=result["fake_probability"],
+            real_probability=result["real_probability"],
+            model_name=result["model_used"],
+            model_version=settings.VERSION,
+            processing_time_ms=result["processing_time_ms"]
+        )
         
         return PredictResponse(
             label=result["label"],

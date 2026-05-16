@@ -15,6 +15,9 @@ class Settings(BaseSettings):
     MODEL_NUM_CLASSES: int = 2
     INPUT_SIZE: int = 224
 
+    # Database Config
+    DATABASE_PATH: str = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "predictions.db")
+
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", case_sensitive=True)
 
 settings = Settings()
