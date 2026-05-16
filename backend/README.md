@@ -43,4 +43,10 @@ This is the FastAPI backend for the AI Image Detector project. It will provide e
   curl -X POST http://localhost:8000/api/v1/predict \
     -F "file=@../demo/fake.jpg"
   ```
+- `POST /api/v1/predict-url`: Predict from image URL. Example:
+  ```bash
+  curl -X POST http://localhost:8000/api/v1/predict-url \
+    -H "Content-Type: application/json" \
+    -d '{"image_url": "https://example.com/image.jpg"}'
+  ```
 - `GET /docs`: Auto-generated Swagger documentation.

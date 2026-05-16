@@ -14,3 +14,6 @@ class PredictResponse(BaseModel):
     model_version: str
     processing_time_ms: int
 
+class PredictUrlRequest(BaseModel):
+    image_url: str
+
