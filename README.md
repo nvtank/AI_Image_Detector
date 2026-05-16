@@ -1,31 +1,101 @@
 # AI Image Detector
 
-Dự án phát hiện ảnh AI (AI-generated image detection) sử dụng công nghệ Deep Learning. Hệ thống cung cấp giải pháp toàn diện bao gồm việc benchmark nhiều mô hình khác nhau, cung cấp Backend API, ứng dụng Web Frontend và Browser Extension.
+Dự án phát hiện ảnh AI (AI-generated image detection) sử dụng Deep Learning (EfficientNetV2, ConvNeXt, ResNet50). Hệ thống bao gồm Backend FastAPI, Web App Next.js, và Chrome Extension.
 
-## 🌟 Tính năng chính
+## 🌟 Tính năng
 
-- **Phát hiện ảnh AI**: Ứng dụng các mô hình Deep Learning tiên tiến để phân loại ảnh thật và ảnh do AI tạo ra.
-- **Benchmark nhiều Model**: Đánh giá và so sánh hiệu năng của các kiến trúc khác nhau (ví dụ: CNNs, Vision Transformers) trên nhiều tập dữ liệu đa dạng.
-- **Backend API**: RESTful API mạnh mẽ phục vụ việc gửi ảnh và nhận kết quả dự đoán với độ trễ thấp.
-- **Web App**: Giao diện trực quan cho phép người dùng tải ảnh lên và xem kết quả phân tích chi tiết.
-- **Browser Extension**: Tiện ích mở rộng cho trình duyệt giúp kiểm tra nhanh hình ảnh trực tiếp trên các trang web đang xem.
+- **Phát hiện ảnh AI** với độ chính xác cao (F1 ~98.6%)
+- **Benchmark đa model**: EfficientNetV2, ConvNeXt, ResNet50, EfficientNet-B0
+- **Robustness testing** (noise, blur, JPEG compression)
+- **Grad-CAM Explainability** – hiển thị vùng ảnh model chú ý
+- **REST API** (FastAPI): upload ảnh hoặc kiểm tra qua URL
+- **Web Dashboard**: biểu đồ so sánh model, lịch sử dự đoán
+- **Chrome Extension**: right-click kiểm tra ảnh ngay trên trang web
 
 ## 📂 Cấu trúc dự án
 
-- `backend/`: Chứa mã nguồn cho API server (ví dụ: FastAPI hoặc Flask), chịu trách nhiệm nhận request, xử lý logic, load model và trả về dự đoán.
-- `frontend/`: Ứng dụng web tương tác người dùng (ví dụ: React, Vue, hoặc Next.js).
-- `extension/`: Mã nguồn của tiện ích mở rộng trình duyệt (Manifest V3).
-- `experiments/`: Nơi chứa Jupyter notebooks, dataset configs, và các scripts dùng để train, evaluate, và benchmark các mô hình Deep Learning.
-- `docs/`: Tài liệu thiết kế hệ thống, API references, báo cáo và các tài liệu khác.
-- `demo/`: Các hình ảnh, video, hoặc tài liệu dùng để thuyết trình/demo dự án.
+```
+project/
+├── backend/          # FastAPI inference server
+├── frontend/         # Next.js web app
+├── extension/        # Chrome Extension (Manifest V3)
+├── experiments/      # Training results, benchmark data
+├── docs/             # Documentation
+└── demo/             # Demo images
+```
 
-## 🛠 Công nghệ dự kiến
+## 🚀 Quick Start
 
-- **Core AI**: Python, PyTorch / TensorFlow, OpenCV, Scikit-learn
-- **Backend**: Python (FastAPI / Flask)
-- **Frontend**: JavaScript / TypeScript, React.js / Next.js, Tailwind CSS
-- **Extension**: Vanilla JS / React, HTML, CSS
+### 1. Backend (FastAPI)
 
-## 🚀 Bắt đầu (Đang cập nhật)
+```bash
+cd backend
 
-*Hướng dẫn cài đặt chi tiết cho từng môi trường (dev/prod) sẽ được cập nhật trong quá trình phát triển.*
+# Tạo và kích hoạt virtual environment
+python -m venv .venv
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
+
+# Cài đặt dependencies
+pip install -r requirements.txt
+
+# Sao chép biến môi trường
+cp .env.example .env
+
+# Đặt file model weights vào backend/weights/best_model.pt
+
+# Chạy server
+uvicorn app.main:app --reload
+```
+
+Backend sẽ chạy tại: **http://localhost:8000**
+API Docs (Swagger): **http://localhost:8000/docs**
+
+### 2. Frontend (Next.js)
+
+```bash
+cd frontend
+
+# Cài đặt dependencies
+npm install
+
+# Sao chép biến môi trường
+cp .env.example .env.local
+
+# Chạy dev server
+npm run dev
+```
+
+Frontend sẽ chạy tại: **http://localhost:3000**
+
+### 3. Chrome Extension
+
+1. Mở `chrome://extensions/`
+2. Bật **Developer mode**
+3. Nhấn **Load unpacked** → chọn thư mục `extension/`
+4. Right-click vào bất kỳ ảnh nào trên web → **"Check AI Generated Image"**
+
+### 4. Docker (Backend only)
+
+```bash
+cd backend
+docker compose up -d
+```
+
+## 🔌 API Endpoints
+
+| Method | Endpoint | Mô tả |
+|--------|----------|-------|
+| GET | `/health` | Kiểm tra trạng thái server |
+| POST | `/predict` | Upload ảnh để phân tích |
+| POST | `/predict-url` | Phân tích ảnh qua URL |
+| POST | `/explain` | Grad-CAM heatmap |
+| GET | `/history` | Lịch sử dự đoán |
+| GET | `/models` | Thông tin model đang dùng |
+| GET | `/metrics` | Dữ liệu benchmark |
+
+## 🛠 Công nghệ
+
+- **AI/ML**: Python, PyTorch, timm, OpenCV
+- **Backend**: FastAPI, Uvicorn, SQLite, Pydantic
+- **Frontend**: Next.js 15, Tailwind CSS, Recharts, TypeScript
+- **Extension**: Vanilla JS, Manifest V3

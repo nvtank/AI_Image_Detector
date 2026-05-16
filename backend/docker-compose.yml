@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  backend:
+    build: .
+    container_name: ai_image_detector_backend
+    ports:
+      - "8000:8000"
+    volumes:
+      # Persist SQLite database so prediction history is not lost on restart
+      - ./data:/app/data
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8000
+    restart: unless-stopped
