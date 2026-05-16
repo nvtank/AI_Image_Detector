@@ -6,3 +6,4 @@ torch>=2.0.0
 torchvision>=0.15.0
 Pillow>=10.0.0
 timm>=0.9.0
+python-multipart==0.0.9

@@ -38,4 +38,9 @@ This is the FastAPI backend for the AI Image Detector project. It will provide e
 ## Endpoints
 
 - `GET /health`: Health check endpoint.
+- `POST /api/v1/predict`: Upload image for detection. Example:
+  ```bash
+  curl -X POST http://localhost:8000/api/v1/predict \
+    -F "file=@../demo/fake.jpg"
+  ```
 - `GET /docs`: Auto-generated Swagger documentation.
