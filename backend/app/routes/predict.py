@@ -1,7 +1,8 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException
-from app.schemas import PredictResponse, PredictUrlRequest
+from app.schemas import PredictResponse, PredictUrlRequest, ExplainResponse
 from app.services.inference_service import inference_service
 from app.services.logging_service import logging_service
+from app.services.gradcam_service import gradcam_service
 from app.config import settings
 from PIL import Image
 import io
@@ -121,3 +122,20 @@ async def predict_image_url(request: PredictUrlRequest):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error processing image URL: {str(e)}")
+
+@router.post("/explain", response_model=ExplainResponse, tags=["inference"])
+async def explain_image(file: UploadFile = File(...)):
+    """
+    Generate Grad-CAM heatmap for an uploaded image.
+    """
+    if not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="File must be an image.")
+    
+    try:
+        contents = await file.read()
+        image = Image.open(io.BytesIO(contents)).convert("RGB")
+        
+        result = gradcam_service.explain(image)
+        return ExplainResponse(**result)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Grad-CAM failed: {str(e)}")

@@ -14,6 +14,12 @@ class PredictResponse(BaseModel):
     model_version: str
     processing_time_ms: int
 
+class ExplainResponse(BaseModel):
+    label: str
+    confidence: float
+    heatmap_base64: str
+    processing_time_ms: int
+
 class PredictUrlRequest(BaseModel):
     image_url: str
 
