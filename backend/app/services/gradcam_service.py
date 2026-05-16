@@ -1,11 +1,10 @@
 import torch
-import torch.nn.functional as F
 import numpy as np
 import cv2
 import base64
 from PIL import Image
 import time
-from app.services.inference_service import inference_service
+from app.core.model_registry import model_registry
 from app.services.preprocessing import preprocess_image
 
 class GradCAM:
@@ -76,9 +75,8 @@ class GradCAMService:
     def explain(self, image: Image.Image):
         start_time = time.time()
         
-        # Get model
-        model = inference_service.model
-        device = inference_service.device
+        # Get model from registry
+        model, device = model_registry.get_model()
         
         # Get target layer
         target_layer = self._get_target_layer(model)
