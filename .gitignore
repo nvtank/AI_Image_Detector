@@ -54,3 +54,16 @@ yarn-debug.log
 *.swo
 .DS_Store
 Thumbs.db
+
+# Next.js
+.next/
+out/
+
+# Environment files — NEVER commit secrets
+.env
+.env.local
+.env.*.local
+
+# SQLite database (contains user data)
+*.db
+backend/data/
