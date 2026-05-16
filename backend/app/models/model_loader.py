@@ -33,6 +33,8 @@ def load_model():
         # Strip 'module.' prefix if it exists
         if 'state_dict' in state_dict:
             state_dict = state_dict['state_dict']
+        elif 'model_state' in state_dict:
+            state_dict = state_dict['model_state']
             
         new_state_dict = {}
         for k, v in state_dict.items():
