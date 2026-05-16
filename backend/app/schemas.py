@@ -24,3 +24,19 @@ class PredictionLog(PredictResponse):
     image_url: str | None = None
     created_at: str
 
+class AvailableModel(BaseModel):
+    name: str
+    role: str
+    clean_f1: float
+    robust_avg_f1: float
+
+class ModelsInfoResponse(BaseModel):
+    active_model: str
+    model_version: str
+    available_models: list[AvailableModel]
+
+class MetricsResponse(BaseModel):
+    model_comparison: list[dict]
+    robustness_results: list[dict]
+    training_history_summary: list[dict]
+

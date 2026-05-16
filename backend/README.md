@@ -49,4 +49,7 @@ This is the FastAPI backend for the AI Image Detector project. It will provide e
     -H "Content-Type: application/json" \
     -d '{"image_url": "https://example.com/image.jpg"}'
   ```
+- `GET /history`: Get recent prediction logs.
+- `GET /models`: Get active and available models list.
+- `GET /metrics`: Get benchmark and comparison metrics data.
 - `GET /docs`: Auto-generated Swagger documentation.
