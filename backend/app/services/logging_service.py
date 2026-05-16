@@ -56,7 +56,12 @@ class LoggingService:
         with self._get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute('''
-                SELECT * FROM prediction_logs
+                SELECT 
+                    id, source_type, image_name, image_url, 
+                    predicted_label as label, confidence, 
+                    fake_probability, real_probability, 
+                    model_name, model_version, processing_time_ms, created_at
+                FROM prediction_logs
                 ORDER BY created_at DESC
                 LIMIT ? OFFSET ?
             ''', (limit, offset))
