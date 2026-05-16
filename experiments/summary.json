@@ -1,0 +1,33 @@
+{
+    "models": [
+        {
+            "model_name": "efficientnetv2_rw_s",
+            "clean_accuracy": 0.99,
+            "clean_f1": 0.9857989979772973,
+            "robust_avg_f1": 0.9808115870365279,
+            "avg_drop": 0.004987410940769377
+        },
+        {
+            "model_name": "convnext_tiny",
+            "clean_accuracy": 0.99,
+            "clean_f1": 0.9862999649279102,
+            "robust_avg_f1": 0.9752569885762874,
+            "avg_drop": 0.011042976351622769
+        },
+        {
+            "model_name": "resnet50",
+            "clean_accuracy": 0.98,
+            "clean_f1": 0.9802967211773711,
+            "robust_avg_f1": 0.9745342902197512,
+            "avg_drop": 0.005762430957619857
+        },
+        {
+            "model_name": "efficientnet_b0",
+            "clean_accuracy": 0.99,
+            "clean_f1": 0.9847997567961088,
+            "robust_avg_f1": 0.9641694424206849,
+            "avg_drop": 0.02063031437542384
+        }
+    ],
+    "best_model_recommended": "efficientnetv2_rw_s"
+}
