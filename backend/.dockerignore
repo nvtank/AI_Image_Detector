@@ -1,0 +1,21 @@
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.env/
+.venv/
+.DS_Store
+.git
+.gitignore
+.dockerignore
+Dockerfile
+docker-compose.yml
+
+# Don't bake the local SQLite DB state into the image (we use volumes for this)
+data/predictions.db
+
+# Exclude frontend/extension/docs from backend docker context if it's placed incorrectly
+node_modules/
