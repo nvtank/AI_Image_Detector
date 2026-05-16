@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>AI Image Detector</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h2>AI Image Detector</h2>
+      <p>Select an image to analyze</p>
+    </div>
+
+    <div class="upload-area" id="uploadArea">
+      <input type="file" id="fileInput" accept="image/jpeg, image/png, image/webp" hidden>
+      <div id="previewContainer" style="display: none;">
+        <img id="imagePreview" src="" alt="Preview">
+      </div>
+      <div id="placeholderText">
+        <span>Click to upload image</span>
+      </div>
+    </div>
+
+    <button id="analyzeBtn" disabled>Analyze Image</button>
+
+    <div id="loading" class="hidden">
+      <div class="spinner"></div>
+      <p>Analyzing...</p>
+    </div>
+
+    <div id="errorBox" class="hidden"></div>
+
+    <div id="resultBox" class="hidden">
+      <div class="result-header" id="resultHeader">
+        <h1 id="resultLabel">FAKE</h1>
+      </div>
+      
+      <div class="result-body">
+        <div class="metric">
+          <span class="label">Confidence</span>
+          <span class="value" id="resultConfidence">98.5%</span>
+        </div>
+        
+        <div class="metric">
+          <span class="label">Model</span>
+          <span class="value" id="resultModel">efficientnetv2</span>
+        </div>
+        
+        <div class="metric">
+          <span class="label">Processing Time</span>
+          <span class="value" id="resultTime">150 ms</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
