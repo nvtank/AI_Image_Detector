@@ -121,12 +121,25 @@ function HistoryContent() {
                 }`}>
                   {log.label}
                 </span>
+                {/* Source type badge */}
+                {log.source_type === "screenshot" && (
+                  <span className="absolute top-2 left-2 px-2 py-0.5 text-xs font-bold rounded-full bg-purple-600 text-white shadow">
+                    📸 Screenshot
+                  </span>
+                )}
+                {log.source_type === "url" && (
+                  <span className="absolute top-2 left-2 px-2 py-0.5 text-xs font-bold rounded-full bg-blue-600 text-white shadow">
+                    🔗 URL
+                  </span>
+                )}
               </div>
 
               {/* Card body */}
               <div className="p-4 flex flex-col gap-2 flex-grow">
-                <p className="text-sm font-semibold truncate text-slate-800 dark:text-slate-200" title={log.image_name || log.image_url || "URL image"}>
-                  {log.image_name || (log.source_type === "url" ? "URL image" : "Untitled")}
+                <p className="text-sm font-semibold truncate text-slate-800 dark:text-slate-200" title={log.image_name || log.image_url || "image"}>
+                  {log.image_name
+                    || (log.source_type === "screenshot" ? "Captured area":
+                       log.source_type === "url" ? "URL image" : "Untitled")}
                 </p>
 
                 <div className="flex justify-between text-xs text-slate-500">

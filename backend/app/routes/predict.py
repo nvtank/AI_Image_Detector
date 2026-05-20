@@ -1,7 +1,7 @@
 import io
 import logging
 import httpx
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from PIL import Image
 
 from app.config import settings
@@ -33,6 +33,7 @@ def _try_cloudinary_upload(file_bytes: bytes, filename: str, user_id: int) -> di
 @router.post("/predict", response_model=PredictResponse, tags=["inference"])
 async def predict_image(
     file: UploadFile = File(...),
+    source_type: str = Form("upload"),
     current_user: dict = Depends(get_current_user),
 ):
     """Upload an image for AI detection. Requires authentication."""
@@ -55,7 +56,7 @@ async def predict_image(
     warning = cdn.pop("_warning", None)
 
     logging_service.log_prediction(
-        source_type="upload",
+        source_type=source_type,
         image_name=file.filename,
         image_url=cdn.get("cloudinary_secure_url"),
         predicted_label=result["label"],
