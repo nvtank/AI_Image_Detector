@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, ConfigDict
 from typing import Optional
 
 # ---- Health ----
@@ -35,6 +35,7 @@ class PredictUrlRequest(BaseModel):
     image_url: str
 
 class PredictResponse(BaseModel):
+    model_config = ConfigDict(protected_namespaces=())
     label: str
     confidence: float
     fake_probability: float
@@ -55,6 +56,7 @@ class ExplainResponse(BaseModel):
 
 # ---- History ----
 class HistoryItemResponse(BaseModel):
+    model_config = ConfigDict(protected_namespaces=())
     id: int
     source_type: str
     image_name: Optional[str] = None
@@ -81,11 +83,13 @@ class AvailableModel(BaseModel):
     robust_avg_f1: float
 
 class ModelsInfoResponse(BaseModel):
+    model_config = ConfigDict(protected_namespaces=())
     active_model: str
     model_version: str
     available_models: list[AvailableModel]
 
 class MetricsResponse(BaseModel):
+    model_config = ConfigDict(protected_namespaces=())
     model_comparison: list[dict]
     robustness_results: list[dict]
     training_history_summary: list[dict]

@@ -7,55 +7,95 @@
 </head>
 <body>
   <div class="container">
+
+    <!-- Header -->
     <div class="header">
       <h2>AI Image Detector</h2>
-      <p>Select an image to analyze</p>
+      <p id="userEmail" class="user-email hidden"></p>
     </div>
 
-    <div class="upload-area" id="uploadArea">
-      <input type="file" id="fileInput" accept="image/jpeg, image/png, image/webp" hidden>
-      <div id="previewContainer" style="display: none;">
-        <img id="imagePreview" src="" alt="Preview">
+    <!-- Auth section (shown when not logged in) -->
+    <div id="authSection">
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tabLogin">Login</button>
+        <button class="auth-tab" id="tabSignup">Sign Up</button>
       </div>
-      <div id="placeholderText">
-        <span>Click to upload image</span>
+
+      <div id="loginForm">
+        <input type="email" id="loginEmail" placeholder="Email" class="input-field">
+        <input type="password" id="loginPassword" placeholder="Password" class="input-field">
+        <button id="loginBtn" class="btn-primary">Sign In</button>
       </div>
+
+      <div id="signupForm" class="hidden">
+        <input type="text" id="signupName" placeholder="Full Name" class="input-field">
+        <input type="email" id="signupEmail" placeholder="Email" class="input-field">
+        <input type="password" id="signupPassword" placeholder="Password (min. 6 chars)" class="input-field">
+        <button id="signupBtn" class="btn-primary">Create Account</button>
+      </div>
+
+      <div id="authError" class="error-box hidden"></div>
     </div>
 
-    <button id="analyzeBtn" disabled>Analyze Image</button>
+    <!-- Main section (shown when logged in) -->
+    <div id="mainSection" class="hidden">
 
+      <!-- Capture Area Button (primary CTA) -->
+      <button id="captureBtn" class="btn-capture">
+        📸 Capture Area
+        <span class="btn-sub">Drag to select region on page</span>
+      </button>
+
+      <div class="divider">or upload a file</div>
+
+      <!-- Upload area -->
+      <div class="upload-area" id="uploadArea">
+        <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp" hidden>
+        <div id="previewContainer" style="display:none">
+          <img id="imagePreview" src="" alt="Preview">
+        </div>
+        <div id="placeholderText">
+          <span>Click to upload image</span>
+        </div>
+      </div>
+
+      <button id="analyzeBtn" disabled>Analyze Image</button>
+
+      <button id="logoutBtn" class="btn-logout">Logout</button>
+    </div>
+
+    <!-- Loading -->
     <div id="loading" class="hidden">
       <div class="spinner"></div>
       <p>Analyzing...</p>
     </div>
 
+    <!-- Error -->
     <div id="errorBox" class="hidden"></div>
 
+    <!-- Result -->
     <div id="resultBox" class="hidden">
       <div class="result-header" id="resultHeader">
         <h1 id="resultLabel">FAKE</h1>
       </div>
-      
       <div class="result-body">
         <div class="metric">
           <span class="label">Confidence</span>
-          <span class="value" id="resultConfidence">98.5%</span>
+          <span class="value" id="resultConfidence"></span>
         </div>
-        
         <div class="metric">
           <span class="label">Model</span>
-          <span class="value" id="resultModel">efficientnetv2</span>
+          <span class="value" id="resultModel"></span>
         </div>
-        
         <div class="metric">
-          <span class="label">Processing Time</span>
-          <span class="value" id="resultTime">150 ms</span>
+          <span class="label">Time</span>
+          <span class="value" id="resultTime"></span>
         </div>
       </div>
     </div>
+
   </div>
 
-  <script src="config.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

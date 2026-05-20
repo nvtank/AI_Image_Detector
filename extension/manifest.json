@@ -1,24 +1,38 @@
 {
   "manifest_version": 3,
   "name": "AI Image Detector",
-  "version": "1.0.0",
-  "description": "Detect if an image is real or AI-generated using Deep Learning.",
+  "version": "2.0.0",
+  "description": "Detect AI-generated images by upload, URL, or screen capture region.",
   "action": {
     "default_popup": "popup.html",
     "default_title": "AI Image Detector"
   },
   "permissions": [
     "activeTab",
+    "scripting",
     "contextMenus",
-    "notifications"
+    "notifications",
+    "storage"
   ],
   "host_permissions": [
     "http://localhost:8000/*"
   ],
   "background": {
-    "service_worker": "background.js"
+    "scripts": ["background.js"]
   },
   "icons": {
     "128": "icon128.png"
-  }
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "aidetector@nvtank.local",
+      "strict_min_version": "109.0"
+    }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["content/crop-selector.js", "content/result-overlay.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]
 }
