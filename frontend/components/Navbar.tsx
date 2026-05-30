@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import NotificationBell from "@/components/NotificationBell";
 
 const publicLinks = [
   { href: "/dashboard", label: "Dashboard" },
@@ -101,6 +102,9 @@ export default function Navbar() {
                         {isAdmin ? "⚡ Admin" : "User"}
                       </span>
                     </div>
+
+                    {/* Phase 5: Real-Time Notification Bell */}
+                    <NotificationBell />
 
                     {/* Logout dropdown */}
                     <div className="relative group">

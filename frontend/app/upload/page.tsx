@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import Image from "next/image";
 import AuthGuard from "@/components/AuthGuard";
 import { api } from "@/lib/api";
+import { useNotifications } from "@/context/NotificationContext";
 
 type LocalModelResult = {
   predicted_label: string;
@@ -70,12 +71,52 @@ function UploadContent() {
   const [taskPercent, setTaskPercent] = useState(0);
   const pollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // Phase 5: WebSocket notification hooks
+  const { subscribeToTask, onTaskProgress, onTaskComplete, onTaskFailed, isConnected } =
+    useNotifications();
+  // Track active task for WS event dedup
+  const activeTaskRef = useRef<string | null>(null);
+
   const stopPolling = useCallback(() => {
     if (pollTimerRef.current) {
       clearInterval(pollTimerRef.current);
       pollTimerRef.current = null;
     }
   }, []);
+
+  // Register WS listeners for task events
+  useEffect(() => {
+    const unsubProgress = onTaskProgress((tid, stage, label, percent) => {
+      if (tid !== activeTaskRef.current) return;
+      setTaskStage(stage.toUpperCase());
+      setTaskLabel(label);
+      setTaskPercent(percent);
+    });
+
+    const unsubComplete = onTaskComplete((tid, taskResult) => {
+      if (tid !== activeTaskRef.current) return;
+      stopPolling(); // Stop HTTP polling — WS delivered the result
+      setResult(taskResult as HybridPredictResult);
+      setIsLoading(false);
+      setTaskId(null);
+      activeTaskRef.current = null;
+    });
+
+    const unsubFailed = onTaskFailed((tid, taskError) => {
+      if (tid !== activeTaskRef.current) return;
+      stopPolling();
+      setError(taskError || "Phân tích thất bại. Vui lòng thử lại.");
+      setIsLoading(false);
+      setTaskId(null);
+      activeTaskRef.current = null;
+    });
+
+    return () => {
+      unsubProgress();
+      unsubComplete();
+      unsubFailed();
+    };
+  }, [onTaskProgress, onTaskComplete, onTaskFailed, stopPolling]);
 
   useEffect(() => {
     return () => stopPolling();
@@ -154,13 +195,20 @@ function UploadContent() {
 
     try {
       if (useAsync && useGemini) {
-        // ── Phase 3: Async mode ───────────────────────────────────────
+        // ── Phase 3 + 5: Async mode + WebSocket progress ──────────────
         const queued = await api.uploadImageHybridAsync(file, true);
         setTaskId(queued.task_id);
+        activeTaskRef.current = queued.task_id;  // Register for WS events
         setTaskStage("PENDING");
         setTaskLabel("Đang xếp hàng chờ xử lý...");
         setTaskPercent(5);
+
+        // Phase 5: Subscribe to WebSocket updates for this task
+        subscribeToTask(queued.task_id);
+
+        // Phase 3 fallback: HTTP polling (runs in parallel, WS events take priority)
         startPolling(queued.task_id);
+
       } else if (useGemini) {
         // ── Sync hybrid (legacy, backward compat) ────────────────────
         const data = await api.uploadImageHybrid(file, true);
@@ -338,7 +386,16 @@ function UploadContent() {
             <div className="p-5 bg-white dark:bg-slate-900 rounded-2xl border border-indigo-200 dark:border-indigo-800/50 shadow-sm space-y-4">
               <div className="flex items-center justify-between mb-1">
                 <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">⚡ Async Pipeline</span>
-                <span className="text-xs text-slate-400">{taskPercent}%</span>
+                <div className="flex items-center gap-2">
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold ${
+                    isConnected
+                      ? "bg-green-400/15 text-green-400"
+                      : "bg-slate-700 text-slate-400"
+                  }`}>
+                    {isConnected ? "🟢 WebSocket" : "🔄 Polling"}
+                  </span>
+                  <span className="text-xs text-slate-400">{taskPercent}%</span>
+                </div>
               </div>
               {/* Progress bar */}
               <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
