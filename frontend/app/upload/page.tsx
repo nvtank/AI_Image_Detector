@@ -16,11 +16,17 @@ type LocalModelResult = {
 
 type GeminiAnalysis = {
   predicted_label: string;
+  confidence_score: number;
   confidence_level: string;
+  evidence_for_fake: string[];
+  evidence_for_real: string[];
+  uncertainty_reasons: string[];
   reasoning_summary: string;
-  visual_signals: string[];
-  limitations?: string;
+  recommendation: string;
+  should_trust_result: boolean;
   error?: boolean;
+  visual_signals?: string[];
+  limitations?: string;
 };
 
 type HybridPredictResult = {
@@ -319,35 +325,69 @@ function UploadContent() {
                     <div className="flex flex-col flex-grow">
                       <div className="text-center mb-4">
                         <span className="text-xs text-slate-400 dark:text-slate-500 block mb-0.5">Confidence Level</span>
-                        <span className="text-lg font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
-                          {result.gemini_analysis.confidence_level}
+                        <span className="text-lg font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider block">
+                          {result.gemini_analysis.confidence_level} 
+                          {result.gemini_analysis.confidence_score > 0 && ` (${(result.gemini_analysis.confidence_score * 100).toFixed(0)}%)`}
                         </span>
                       </div>
 
-                      <div className="space-y-3 flex-grow">
+                      <div className="space-y-4 flex-grow">
                         <div>
-                          <span className="text-xs text-slate-400 dark:text-slate-500 block mb-1">Reasoning Summary</span>
-                          <p className="text-xs text-slate-600 dark:text-slate-350 leading-relaxed bg-slate-50 dark:bg-slate-950 p-2.5 rounded-lg border border-slate-100 dark:border-slate-850">
+                          <span className="text-xs font-semibold text-slate-400 dark:text-slate-550 block mb-1">Reasoning Summary</span>
+                          <p className="text-xs text-slate-650 dark:text-slate-350 leading-relaxed bg-slate-50 dark:bg-slate-950 p-3 rounded-lg border border-slate-100 dark:border-slate-850">
                             {result.gemini_analysis.reasoning_summary}
                           </p>
                         </div>
 
-                        <div>
-                          <span className="text-xs text-slate-400 dark:text-slate-500 block mb-1">Visual Signals</span>
-                          <ul className="space-y-1 text-[11px] text-slate-500 dark:text-slate-400">
-                            {result.gemini_analysis.visual_signals.map((sig, i) => (
-                              <li key={i} className="flex items-start gap-1">
-                                <span className="text-indigo-500 mt-0.5">•</span>
-                                <span className="leading-tight">{sig}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
+                        {/* Evidence for FAKE */}
+                        {result.gemini_analysis.evidence_for_fake && result.gemini_analysis.evidence_for_fake.length > 0 && (
+                          <div>
+                            <span className="text-xs font-bold text-red-500 block mb-1">Dấu hiệu nghi ngờ (AI-Generated):</span>
+                            <ul className="space-y-1 text-[11px] text-slate-550 dark:text-slate-400">
+                              {result.gemini_analysis.evidence_for_fake.map((sig, i) => (
+                                <li key={i} className="flex items-start gap-1">
+                                  <span className="text-red-500 mt-0.5">❌</span>
+                                  <span className="leading-tight">{sig}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        {/* Evidence for REAL */}
+                        {result.gemini_analysis.evidence_for_real && result.gemini_analysis.evidence_for_real.length > 0 && (
+                          <div>
+                            <span className="text-xs font-bold text-green-500 block mb-1">Dấu hiệu thực tế (Authentic):</span>
+                            <ul className="space-y-1 text-[11px] text-slate-550 dark:text-slate-400">
+                              {result.gemini_analysis.evidence_for_real.map((sig, i) => (
+                                <li key={i} className="flex items-start gap-1">
+                                  <span className="text-green-500 mt-0.5">✓</span>
+                                  <span className="leading-tight">{sig}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        {/* Uncertainty Reasons */}
+                        {result.gemini_analysis.uncertainty_reasons && result.gemini_analysis.uncertainty_reasons.length > 0 && (
+                          <div>
+                            <span className="text-xs font-bold text-amber-500 block mb-1">Cơ sở không chắc chắn:</span>
+                            <ul className="space-y-1 text-[11px] text-slate-550 dark:text-slate-400">
+                              {result.gemini_analysis.uncertainty_reasons.map((sig, i) => (
+                                <li key={i} className="flex items-start gap-1">
+                                  <span className="text-amber-500 mt-0.5">⚠</span>
+                                  <span className="leading-tight">{sig}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
                       </div>
 
-                      {result.gemini_analysis.limitations && (
-                        <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 text-[10px] text-slate-400 dark:text-slate-550 leading-snug">
-                          <strong>Limitations:</strong> {result.gemini_analysis.limitations}
+                      {result.gemini_analysis.recommendation && (
+                        <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 text-[10px] text-slate-450 dark:text-slate-500 leading-snug">
+                          <strong>Khuyến nghị:</strong> {result.gemini_analysis.recommendation}
                         </div>
                       )}
                     </div>
@@ -362,7 +402,6 @@ function UploadContent() {
                     </div>
                   )}
                 </div>
-
               </div>
 
               {/* Save info footer */}

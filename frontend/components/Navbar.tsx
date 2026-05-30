@@ -9,24 +9,44 @@ const publicLinks = [
   { href: "/about", label: "About" },
 ];
 
-const authLinks = [
+const userLinks = [
   { href: "/upload", label: "Upload" },
   { href: "/history", label: "History" },
   { href: "/dashboard", label: "Dashboard" },
   { href: "/about", label: "About" },
 ];
 
+// Admin-only links shown only when role === "admin"
+const adminLinks = [
+  { href: "/upload", label: "Upload" },
+  { href: "/history", label: "History" },
+  { href: "/dashboard", label: "Dashboard" },
+  { href: "/admin/security", label: "Security" },
+  { href: "/about", label: "About" },
+];
+
 export default function Navbar() {
   const pathname = usePathname();
-  const { user, isAuthenticated, logout, loading } = useAuth();
+  const { user, isAuthenticated, isAdmin, role, logout, logoutAll, loading } = useAuth();
   const router = useRouter();
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     router.push("/");
   };
 
-  const links = isAuthenticated ? authLinks : publicLinks;
+  const handleLogoutAll = async () => {
+    if (confirm("Đăng xuất khỏi tất cả thiết bị?")) {
+      await logoutAll();
+      router.push("/");
+    }
+  };
+
+  const links = isAuthenticated
+    ? isAdmin
+      ? adminLinks
+      : userLinks
+    : publicLinks;
 
   return (
     <nav className="bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 shadow-sm sticky top-0 z-50">
@@ -51,7 +71,14 @@ export default function Navbar() {
                       : "text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-800"
                   }`}
                 >
-                  {label}
+                  {/* Highlight Security link for admin */}
+                  {label === "Security" ? (
+                    <span className="flex items-center gap-1">
+                      <span>🔒</span> {label}
+                    </span>
+                  ) : (
+                    label
+                  )}
                 </Link>
               ))}
 
@@ -59,15 +86,39 @@ export default function Navbar() {
               <div className="ml-3 flex items-center gap-2 border-l border-slate-200 dark:border-slate-700 pl-3">
                 {isAuthenticated ? (
                   <>
-                    <span className="text-sm text-slate-500 dark:text-slate-400 hidden sm:block max-w-[140px] truncate">
-                      {user?.full_name || user?.email}
-                    </span>
-                    <button
-                      onClick={handleLogout}
-                      className="px-3 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                    >
-                      Logout
-                    </button>
+                    <div className="hidden sm:flex flex-col items-end">
+                      <span className="text-sm text-slate-500 dark:text-slate-400 max-w-[140px] truncate leading-tight">
+                        {user?.full_name || user?.email}
+                      </span>
+                      {/* RBAC Role badge */}
+                      <span
+                        className={`text-xs px-1.5 py-0.5 rounded font-semibold ${
+                          isAdmin
+                            ? "bg-amber-500/15 text-amber-400"
+                            : "bg-slate-500/15 text-slate-400"
+                        }`}
+                      >
+                        {isAdmin ? "⚡ Admin" : "User"}
+                      </span>
+                    </div>
+
+                    {/* Logout dropdown */}
+                    <div className="relative group">
+                      <button
+                        onClick={handleLogout}
+                        className="px-3 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                      >
+                        Logout
+                      </button>
+                      {/* Logout all devices link */}
+                      <button
+                        onClick={handleLogoutAll}
+                        title="Đăng xuất khỏi tất cả thiết bị"
+                        className="hidden group-hover:block absolute right-0 top-full mt-1 w-48 px-3 py-2 text-xs text-red-500 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg whitespace-nowrap hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                      >
+                        🚪 Đăng xuất tất cả thiết bị
+                      </button>
+                    </div>
                   </>
                 ) : (
                   <>

@@ -287,8 +287,7 @@ function HistoryContent() {
 
                 {/* Right col: Stats & Details (7 cols) */}
                 <div className="md:col-span-7 space-y-5">
-                  
-                  {/* Decision Display */}
+                         {/* Decision Display */}
                   <div className={`p-5 rounded-2xl border ${
                     (selectedItem.final_decision || selectedItem.label) === "FAKE" ? "bg-red-50/55 dark:bg-red-950/10 border-red-100 dark:border-red-900/20" :
                     (selectedItem.final_decision || selectedItem.label) === "REAL" ? "bg-green-50/55 dark:bg-green-950/10 border-green-100 dark:border-green-900/20" :
@@ -320,9 +319,7 @@ function HistoryContent() {
                     <div className="p-4 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-150 dark:border-slate-850">
                       <strong className="text-xs text-slate-500 dark:text-slate-400 block mb-1">Expert Recommendation:</strong>
                       <p className="text-xs text-slate-600 dark:text-slate-450 leading-relaxed italic">
-                        "{selectedItem.final_decision === "FAKE" ? "Cả hai hệ thống đều nghi ngờ ảnh AI-generated. Khuyên bạn không nên dùng ảnh này cho mục đích pháp lý." :
-                          selectedItem.final_decision === "REAL" ? "Cả hai hệ thống đều tin rằng đây là ảnh chụp tự nhiên thật 100%." :
-                          "Hệ thống không đồng thuận. Đề xuất kiểm tra thủ công kỹ các artifact thị giác."}"
+                        "{selectedItem.gemini_limitations || "Không có khuyến nghị cụ thể."}"
                       </p>
                     </div>
                   )}
