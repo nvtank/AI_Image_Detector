@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import Image from "next/image";
 import AuthGuard from "@/components/AuthGuard";
 import { api } from "@/lib/api";
@@ -40,15 +40,46 @@ type HybridPredictResult = {
   cloudinary_warning?: string;
 };
 
+// Pipeline stage animation config
+const PIPELINE_STAGES = [
+  { key: "PREPROCESSING",   icon: "🖼️",  label: "Preprocessing" },
+  { key: "LOCAL_INFERENCE", icon: "🧠",  label: "PyTorch Model" },
+  { key: "GEMINI_ANALYSIS", icon: "✨",  label: "Gemini AI" },
+  { key: "COMBINING",       icon: "⚡",  label: "Hybrid Decision" },
+  { key: "SUCCESS",         icon: "✅",  label: "Done" },
+];
+
+// Polling interval in ms
+const POLL_INTERVAL = 2000;
+
 function UploadContent() {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [useGemini, setUseGemini] = useState(true);
+  const [useAsync, setUseAsync] = useState(true);  // Phase 3: async mode
   const [result, setResult] = useState<HybridPredictResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Async polling state
+  const [taskId, setTaskId] = useState<string | null>(null);
+  const [taskStage, setTaskStage] = useState<string>("PENDING");
+  const [taskLabel, setTaskLabel] = useState<string>("");
+  const [taskPercent, setTaskPercent] = useState(0);
+  const pollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const stopPolling = useCallback(() => {
+    if (pollTimerRef.current) {
+      clearInterval(pollTimerRef.current);
+      pollTimerRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => {
+    return () => stopPolling();
+  }, [stopPolling]);
 
   const handleFile = (selectedFile: File) => {
     if (!selectedFile.type.startsWith("image/")) {
@@ -58,28 +89,86 @@ function UploadContent() {
     setFile(selectedFile);
     setResult(null);
     setError(null);
+    setTaskId(null);
+    setTaskStage("PENDING");
+    setTaskPercent(0);
     setPreview(URL.createObjectURL(selectedFile));
   };
 
   const clearSelection = () => {
+    stopPolling();
     setFile(null);
     setPreview(null);
     setResult(null);
     setError(null);
+    setTaskId(null);
+    setTaskStage("PENDING");
+    setTaskPercent(0);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
+
+  const cancelTask = async () => {
+    if (!taskId) return;
+    stopPolling();
+    try {
+      await api.cancelTask(taskId);
+    } catch {}
+    setTaskId(null);
+    setIsLoading(false);
+    setTaskStage("PENDING");
+    setTaskLabel("");
+    setTaskPercent(0);
+  };
+
+  const startPolling = useCallback((id: string) => {
+    stopPolling();
+    pollTimerRef.current = setInterval(async () => {
+      try {
+        const status = await api.getTaskStatus(id);
+        setTaskStage(status.state);
+        setTaskLabel(status.label);
+        setTaskPercent(status.percent);
+
+        if (status.state === "SUCCESS" && status.result) {
+          stopPolling();
+          setResult(status.result as HybridPredictResult);
+          setIsLoading(false);
+          setTaskId(null);
+        } else if (status.state === "FAILURE") {
+          stopPolling();
+          setError(status.error || "Phân tích thất bại. Vui lòng thử lại.");
+          setIsLoading(false);
+          setTaskId(null);
+        }
+      } catch {
+        // Network blip — keep polling
+      }
+    }, POLL_INTERVAL);
+  }, [stopPolling]);
 
   const analyzeImage = async () => {
     if (!file) return;
     setIsLoading(true);
     setError(null);
+    setResult(null);
+
     try {
-      if (useGemini) {
+      if (useAsync && useGemini) {
+        // ── Phase 3: Async mode ───────────────────────────────────────
+        const queued = await api.uploadImageHybridAsync(file, true);
+        setTaskId(queued.task_id);
+        setTaskStage("PENDING");
+        setTaskLabel("Đang xếp hàng chờ xử lý...");
+        setTaskPercent(5);
+        startPolling(queued.task_id);
+      } else if (useGemini) {
+        // ── Sync hybrid (legacy, backward compat) ────────────────────
         const data = await api.uploadImageHybrid(file, true);
         setResult(data);
+        setIsLoading(false);
       } else {
+        // ── Local model only (fast, sync) ─────────────────────────────
         const data = await api.uploadImage(file);
-        // Normalize local-only response to the hybrid structure
         setResult({
           final_decision: data.label,
           agreement_status: "gemini_unavailable",
@@ -91,15 +180,15 @@ function UploadContent() {
             model_name: data.model_name,
             processing_time_ms: data.processing_time_ms,
           },
-          recommendation: "Chỉ chạy mô hình học máy nội bộ. Phân tích Gemini đã bị tắt hoặc không khả dụng.",
+          recommendation: "Chỉ chạy mô hình học máy nội bộ. Phân tích Gemini đã bị tắt.",
           image_url: data.image_url,
           thumbnail_url: data.thumbnail_url,
           cloudinary_warning: data.cloudinary_warning,
         });
+        setIsLoading(false);
       }
     } catch (err: any) {
       setError(err.message || "An error occurred while analyzing the image.");
-    } finally {
       setIsLoading(false);
     }
   };
@@ -191,23 +280,105 @@ function UploadContent() {
             </label>
           </div>
 
-          {/* Trigger button */}
-          <button
-            onClick={analyzeImage}
-            disabled={!file || isLoading}
-            className={`w-full py-4 rounded-2xl font-bold text-lg transition-all flex justify-center items-center gap-2.5 shadow-sm
-              ${!file || isLoading ? "bg-slate-200 text-slate-400 dark:bg-slate-800 dark:text-slate-600 cursor-not-allowed" : "bg-gradient-to-r from-blue-600 to-indigo-650 hover:from-blue-700 hover:to-indigo-700 text-white hover:shadow-md transform active:scale-[0.99]"}`}
-          >
-            {isLoading ? (
-              <>
-                <svg className="animate-spin h-5 w-5 text-current" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
-                </svg>
-                Analyzing...
-              </>
-            ) : "Analyze Image"}
-          </button>
+          {/* Phase 3: Async Mode Toggle */}
+          {useGemini && (
+            <div className="p-4 bg-indigo-50/60 dark:bg-indigo-950/20 rounded-2xl border border-indigo-200 dark:border-indigo-800/50 flex items-center justify-between">
+              <div className="flex flex-col gap-0.5 pr-4">
+                <span className="font-semibold text-indigo-700 dark:text-indigo-300 flex items-center gap-1.5 text-sm">
+                  ⚡ Async Queue Mode
+                  <span className="text-[10px] px-1.5 py-0.5 bg-indigo-500/15 text-indigo-500 rounded font-bold">Phase 3</span>
+                </span>
+                <span className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                  Non-blocking: ảnh được xử lý nền bởi Celery Worker + Redis.
+                </span>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={useAsync}
+                  onChange={() => setUseAsync(!useAsync)}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-350 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-500" />
+              </label>
+            </div>
+          )}
+
+          {/* Trigger + Cancel buttons */}
+          <div className="flex gap-3">
+            <button
+              onClick={analyzeImage}
+              disabled={!file || isLoading}
+              className={`flex-1 py-4 rounded-2xl font-bold text-lg transition-all flex justify-center items-center gap-2.5 shadow-sm
+                ${!file || isLoading ? "bg-slate-200 text-slate-400 dark:bg-slate-800 dark:text-slate-600 cursor-not-allowed" : "bg-gradient-to-r from-blue-600 to-indigo-650 hover:from-blue-700 hover:to-indigo-700 text-white hover:shadow-md transform active:scale-[0.99]"}`}
+            >
+              {isLoading ? (
+                <>
+                  <svg className="animate-spin h-5 w-5 text-current" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                  </svg>
+                  {taskId ? "Processing..." : "Uploading..."}
+                </>
+              ) : "Analyze Image"}
+            </button>
+            {taskId && isLoading && (
+              <button
+                onClick={cancelTask}
+                className="px-4 py-4 rounded-2xl font-semibold text-sm text-red-500 bg-red-50 dark:bg-red-950/20 hover:bg-red-100 dark:hover:bg-red-900/30 border border-red-200 dark:border-red-800/50 transition-colors"
+                title="Hủy task"
+              >
+                ✕ Cancel
+              </button>
+            )}
+          </div>
+
+          {/* Phase 3: Async Pipeline Progress */}
+          {isLoading && taskId && (
+            <div className="p-5 bg-white dark:bg-slate-900 rounded-2xl border border-indigo-200 dark:border-indigo-800/50 shadow-sm space-y-4">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">⚡ Async Pipeline</span>
+                <span className="text-xs text-slate-400">{taskPercent}%</span>
+              </div>
+              {/* Progress bar */}
+              <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
+                <div
+                  className="h-2 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all duration-500"
+                  style={{ width: `${taskPercent}%` }}
+                />
+              </div>
+              {/* Stage steps */}
+              <div className="flex justify-between">
+                {PIPELINE_STAGES.map((stage) => {
+                  const stageOrder = ["PREPROCESSING", "LOCAL_INFERENCE", "GEMINI_ANALYSIS", "COMBINING", "SUCCESS"];
+                  const currentIdx = stageOrder.indexOf(taskStage);
+                  const stageIdx = stageOrder.indexOf(stage.key);
+                  const isDone = currentIdx > stageIdx;
+                  const isActive = currentIdx === stageIdx;
+                  return (
+                    <div key={stage.key} className="flex flex-col items-center gap-1">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm transition-all duration-300 ${
+                        isDone ? "bg-green-100 dark:bg-green-900/40 text-green-600" :
+                        isActive ? "bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 ring-2 ring-indigo-400 animate-pulse" :
+                        "bg-slate-100 dark:bg-slate-800 text-slate-400"
+                      }`}>
+                        {stage.icon}
+                      </div>
+                      <span className={`text-[9px] font-medium text-center leading-tight ${
+                        isDone ? "text-green-600 dark:text-green-400" :
+                        isActive ? "text-indigo-600 dark:text-indigo-400" :
+                        "text-slate-400"
+                      }`}>
+                        {stage.label}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+              {/* Current stage label */}
+              <p className="text-xs text-slate-500 dark:text-slate-400 text-center italic">{taskLabel}</p>
+            </div>
+          )}
 
           {error && (
             <div className="p-4 bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 rounded-xl border border-red-200 dark:border-red-900/30 text-sm leading-relaxed">
