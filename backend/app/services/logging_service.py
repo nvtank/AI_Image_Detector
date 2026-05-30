@@ -1,6 +1,7 @@
 import os
 import sqlite3
 import logging
+import json
 from typing import List, Dict, Any, Optional
 from app.config import settings
 
@@ -61,6 +62,22 @@ class LoggingService:
                     FOREIGN KEY (user_id) REFERENCES users(id)
                 )
             ''')
+            # Refresh tokens table (Dual-Token auth system)
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS refresh_tokens (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER NOT NULL,
+                    token_hash TEXT NOT NULL UNIQUE,
+                    expires_at TIMESTAMP NOT NULL,
+                    revoked INTEGER DEFAULT 0,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (user_id) REFERENCES users(id)
+                )
+            ''')
+            cursor.execute('''
+                CREATE INDEX IF NOT EXISTS idx_refresh_token_hash
+                ON refresh_tokens(token_hash)
+            ''')
             conn.commit()
 
     def _migrate_db(self):
@@ -74,6 +91,16 @@ class LoggingService:
                 ("image_width", "INTEGER"),
                 ("image_height", "INTEGER"),
                 ("image_bytes", "INTEGER"),
+                ("local_predicted_label", "TEXT"),
+                ("local_confidence", "REAL"),
+                ("gemini_predicted_label", "TEXT"),
+                ("gemini_confidence_level", "TEXT"),
+                ("gemini_reasoning_summary", "TEXT"),
+                ("gemini_visual_signals", "TEXT"),
+                ("gemini_limitations", "TEXT"),
+                ("agreement_status", "TEXT"),
+                ("final_decision", "TEXT"),
+                ("used_gemini", "INTEGER"),
             ]
         }
         with self._get_connection() as conn:
@@ -106,7 +133,20 @@ class LoggingService:
         image_width: Optional[int] = None,
         image_height: Optional[int] = None,
         image_bytes: Optional[int] = None,
+        local_predicted_label: Optional[str] = None,
+        local_confidence: Optional[float] = None,
+        gemini_predicted_label: Optional[str] = None,
+        gemini_confidence_level: Optional[str] = None,
+        gemini_reasoning_summary: Optional[str] = None,
+        gemini_visual_signals: Optional[List[str]] = None,
+        gemini_limitations: Optional[str] = None,
+        agreement_status: Optional[str] = None,
+        final_decision: Optional[str] = None,
+        used_gemini: Optional[bool] = None,
     ):
+        signals_json = json.dumps(gemini_visual_signals) if gemini_visual_signals is not None else None
+        used_gemini_val = 1 if used_gemini else (0 if used_gemini is not None else None)
+
         with self._get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute('''
@@ -114,13 +154,19 @@ class LoggingService:
                     user_id, source_type, image_name, image_url, thumbnail_url,
                     cloudinary_public_id, image_format, image_width, image_height, image_bytes,
                     predicted_label, confidence, fake_probability, real_probability,
-                    model_name, model_version, processing_time_ms
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    model_name, model_version, processing_time_ms,
+                    local_predicted_label, local_confidence, gemini_predicted_label,
+                    gemini_confidence_level, gemini_reasoning_summary, gemini_visual_signals,
+                    gemini_limitations, agreement_status, final_decision, used_gemini
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (
                 user_id, source_type, image_name, image_url, thumbnail_url,
                 cloudinary_public_id, image_format, image_width, image_height, image_bytes,
                 predicted_label, confidence, fake_probability, real_probability,
-                model_name, model_version, processing_time_ms
+                model_name, model_version, processing_time_ms,
+                local_predicted_label, local_confidence, gemini_predicted_label,
+                gemini_confidence_level, gemini_reasoning_summary, signals_json,
+                gemini_limitations, agreement_status, final_decision, used_gemini_val
             ))
             conn.commit()
 
@@ -152,14 +198,39 @@ class LoggingService:
                     id, source_type, image_name, image_url, thumbnail_url,
                     predicted_label as label, confidence,
                     fake_probability, real_probability,
-                    model_name, model_version, processing_time_ms, created_at
+                    model_name, model_version, processing_time_ms, created_at,
+                    local_predicted_label, local_confidence, gemini_predicted_label,
+                    gemini_confidence_level, gemini_reasoning_summary, gemini_visual_signals,
+                    gemini_limitations, agreement_status, final_decision, used_gemini
                 FROM prediction_logs
                 {where_clause}
                 ORDER BY created_at DESC
                 LIMIT ? OFFSET ?
             ''', (*params, limit, offset))
             rows = cursor.fetchall()
-            return [dict(row) for row in rows]
+            
+            history = []
+            for row in rows:
+                item = dict(row)
+                
+                # Deserialize gemini_visual_signals if it exists
+                signals_str = item.get("gemini_visual_signals")
+                if signals_str:
+                    try:
+                        item["gemini_visual_signals"] = json.loads(signals_str)
+                    except Exception:
+                        item["gemini_visual_signals"] = [signals_str]
+                else:
+                    item["gemini_visual_signals"] = None
+                
+                # Convert used_gemini from INTEGER (0/1) to bool/None
+                ug = item.get("used_gemini")
+                if ug is not None:
+                    item["used_gemini"] = bool(ug)
+                
+                history.append(item)
+                
+            return history
 
 
 logging_service = LoggingService()

@@ -13,3 +13,14 @@ passlib[bcrypt]>=1.7.4
 python-jose[cryptography]>=3.3.0
 cloudinary>=1.38.0
 email-validator>=2.1.0
+google-genai>=0.1.0
+python-dotenv>=1.0.0
+slowapi>=0.1.9
+# ── Phase 3: Async Task Queue ──
+celery>=5.3.6
+redis>=5.0.1
+kombu>=5.3.4
+# ── Phase 4: Observability ──
+prometheus-client>=0.20.0
+
+

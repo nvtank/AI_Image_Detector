@@ -75,10 +75,11 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
 // ── Message listener (from popup & content scripts) ────────────────────────
 let pendingCaptureTabId = null;
 let pendingCaptureWindowId = null;
+let pendingUseGemini = true;
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'START_CAPTURE_AREA') {
-    handleStartCapture(message.tabId, message.windowId);
+    handleStartCapture(message.tabId, message.windowId, message.useGemini);
     sendResponse({ ok: true });
     return;
   }
@@ -91,6 +92,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'CROP_CANCELLED') {
     pendingCaptureTabId = null;
     pendingCaptureWindowId = null;
+    pendingUseGemini = true;
     return;
   }
 
@@ -108,9 +110,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 
 // ── Capture area flow ──────────────────────────────────────────────────────
-async function handleStartCapture(tabId, windowId) {
+async function handleStartCapture(tabId, windowId, useGemini = true) {
   pendingCaptureTabId = tabId;
   pendingCaptureWindowId = windowId;
+  pendingUseGemini = useGemini;
 
   try {
     await chrome.scripting.executeScript({
@@ -158,7 +161,7 @@ async function handleCropSelected(selection, sender) {
     const croppedBlob = await cropDataUrl(screenshotDataUrl, selection);
 
     // Step 5 — upload
-    const result = await uploadBlobToPredictApi(croppedBlob, token, API_URL, 'screenshot');
+    const result = await uploadBlobToPredictApi(croppedBlob, token, API_URL, 'screenshot', pendingUseGemini);
 
     // Step 6 — show result
     await injectResult(tabId, result);
@@ -242,19 +245,34 @@ function injectResultCode(result) {
       const prev = document.getElementById('__ai_result_host__');
       if (prev) prev.remove();
 
-      const isFake = r.label === 'FAKE';
-      const conf = (r.confidence * 100).toFixed(2);
-      const fakeProb = (r.fake_probability * 100).toFixed(1);
-      const realProb = (r.real_probability * 100).toFixed(1);
-      const accentColor = isFake ? '#ef4444' : '#22c55e';
-      const bgAccent = isFake ? 'rgba(239,68,68,0.15)' : 'rgba(34,197,94,0.15)';
+      // Normalize hybrid vs legacy structure
+      const hasHybrid = !!r.final_decision;
+      const decision = hasHybrid ? r.final_decision : r.label;
+      const isFake = decision === 'FAKE';
+      const isUncertain = decision === 'UNCERTAIN';
+      
+      const accentColor = isFake ? '#ef4444' : (isUncertain ? '#f59e0b' : '#22c55e');
+      const bgAccent = isFake ? 'rgba(239,68,68,0.15)' : (isUncertain ? 'rgba(245,158,11,0.15)' : 'rgba(34,197,94,0.15)');
+
+      const localLabel = hasHybrid ? r.local_model.predicted_label : r.label;
+      const localConf = (hasHybrid ? r.local_model.confidence : r.confidence) * 100;
+      const fakeProb = (hasHybrid ? r.local_model.fake_probability : r.fake_probability) * 100;
+      const realProb = (hasHybrid ? r.local_model.real_probability : r.real_probability) * 100;
+      const modelName = hasHybrid ? r.local_model.model_name : r.model_name;
+      const timeMs = hasHybrid ? r.local_model.processing_time_ms : r.processing_time_ms;
+
+      const hasGemini = hasHybrid && r.gemini_analysis && !r.gemini_analysis.error;
+      const geminiLabel = hasGemini ? r.gemini_analysis.predicted_label : 'N/A';
+      const geminiConfLevel = hasGemini ? r.gemini_analysis.confidence_level : '';
+      const geminiReason = hasGemini ? r.gemini_analysis.reasoning_summary : '';
+      const geminiSignals = hasGemini ? r.gemini_analysis.visual_signals : [];
 
       const host = document.createElement('div');
       host.id = '__ai_result_host__';
       Object.assign(host.style, {
         position: 'fixed', top: '20px', right: '20px',
         zIndex: '2147483647', fontFamily: 'system-ui,sans-serif',
-        width: '290px',
+        width: '320px',
       });
 
       const shadow = host.attachShadow({ mode: 'open' });
@@ -262,56 +280,90 @@ function injectResultCode(result) {
       const imageLink = r.image_url
         ? `<a class="link" href="${r.image_url}" target="_blank">↗ View saved image</a>` : '';
 
+      // Build Gemini Section HTML
+      let geminiHtml = '';
+      if (hasGemini) {
+        let sigsLi = '';
+        geminiSignals.forEach(sig => {
+          sigsLi += `<li style="font-size:10px; margin-top:2px; color:#cbd5e1">• ${sig}</li>`;
+        });
+        geminiHtml = `
+          <div class="sec-title" style="margin-top:10px; border-top:1px solid rgba(255,255,255,0.06); padding-top:8px;">
+            ✨ Gemini Review (${geminiLabel})
+          </div>
+          <div style="font-size:11px; color:#cbd5e1; line-height:1.4; background:rgba(255,255,255,0.03); padding:6px 10px; border-radius:6px; margin-top:4px;">
+            <strong>Reason:</strong> ${geminiReason}
+          </div>
+          ${geminiSignals.length > 0 ? `<ul style="list-style:none; padding-left:4px; margin-top:4px;">${sigsLi}</ul>` : ''}
+        `;
+      }
+
+      // Build Recommendation HTML
+      const recommendationHtml = hasHybrid ? `
+        <div style="font-size:11px; font-style:italic; color:#a5b4fc; background:rgba(99,102,241,0.08); border-left:2px solid #6366f1; padding:6px 10px; border-radius:4px; margin-top:10px;">
+          "${r.recommendation}"
+        </div>
+      ` : '';
+
       shadow.innerHTML = `
         <style>
           * { box-sizing: border-box; margin: 0; padding: 0; }
-          .card { background:#0f172a; color:#f1f5f9; border-radius:14px;
+          .card { background:#0f172a; color:#f1f5f9; border-radius:16px;
             box-shadow:0 8px 40px rgba(0,0,0,0.6); overflow:hidden;
+            border: 1px solid rgba(255,255,255,0.08);
             animation: slideIn 0.25s ease; }
           @keyframes slideIn { from{opacity:0;transform:translateX(30px)} to{opacity:1;transform:translateX(0)} }
           .hd { padding:16px 20px 12px; background:${bgAccent};
             border-bottom:1px solid rgba(255,255,255,0.07); }
           .badge { font-size:24px; font-weight:900; color:${accentColor}; letter-spacing:.05em; }
-          .sub { font-size:11px; opacity:.5; text-transform:uppercase; letter-spacing:.06em; margin-top:2px; }
+          .sub { font-size:10px; opacity:.5; text-transform:uppercase; letter-spacing:.06em; margin-top:2px; }
           .bd { padding:14px 20px 16px; display:flex; flex-direction:column; gap:8px; }
-          .row { display:flex; justify-content:space-between; font-size:13px; }
+          .sec-title { font-size:11px; font-weight:700; color:#3b82f6; text-transform:uppercase; letter-spacing:.04em; }
+          .row { display:flex; justify-content:space-between; font-size:12px; }
           .k { opacity:.5; }
           .v { font-weight:600; }
-          .bar-wrap { background:rgba(255,255,255,0.08); border-radius:4px; height:5px; overflow:hidden; margin-top:-4px; }
+          .bar-wrap { background:rgba(255,255,255,0.08); border-radius:4px; height:4px; overflow:hidden; margin-top:-4px; }
           .bar { height:100%; border-radius:4px; }
-          .link { font-size:12px; color:#60a5fa; text-decoration:none; margin-top:2px; display:block; }
+          .link { font-size:11px; color:#60a5fa; text-decoration:none; margin-top:4px; display:block; }
           .link:hover { text-decoration:underline; }
           .ft { padding:10px 20px; border-top:1px solid rgba(255,255,255,0.07);
             display:flex; justify-content:space-between; align-items:center; }
           .timer { font-size:11px; opacity:.4; }
           .close { background:rgba(255,255,255,0.07); border:none; color:#f1f5f9;
-            font-size:12px; padding:5px 12px; border-radius:6px; cursor:pointer; }
+            font-size:11px; padding:5px 12px; border-radius:6px; cursor:pointer; }
           .close:hover { background:rgba(255,255,255,0.15); }
         </style>
         <div class="card">
           <div class="hd">
-            <div class="badge">${r.label}</div>
-            <div class="sub">Screenshot AI Detection</div>
+            <div class="badge">${decision}</div>
+            <div class="sub">Hybrid Region AI Detection</div>
           </div>
           <div class="bd">
-            <div class="row"><span class="k">Confidence</span><span class="v">${conf}%</span></div>
-            <div class="row"><span class="k">AI Generated</span><span class="v" style="color:#ef4444">${fakeProb}%</span></div>
+            <div class="sec-title">Local PyTorch model (${localLabel})</div>
+            <div class="row"><span class="k">Confidence</span><span class="v">${localConf.toFixed(1)}%</span></div>
+            <div class="row"><span class="k">AI Generated</span><span class="v" style="color:#ef4444">${fakeProb.toFixed(1)}%</span></div>
             <div class="bar-wrap"><div class="bar" style="width:${fakeProb}%;background:#ef4444"></div></div>
-            <div class="row"><span class="k">Authentic</span><span class="v" style="color:#22c55e">${realProb}%</span></div>
+            <div class="row"><span class="k">Authentic</span><span class="v" style="color:#22c55e">${realProb.toFixed(1)}%</span></div>
             <div class="bar-wrap"><div class="bar" style="width:${realProb}%;background:#22c55e"></div></div>
-            <div class="row"><span class="k">Model</span><span class="v">${r.model_name}</span></div>
-            <div class="row"><span class="k">Time</span><span class="v">${r.processing_time_ms} ms</span></div>
+            
+            ${geminiHtml}
+            ${recommendationHtml}
+
+            <div style="font-size:10px; color:#64748b; margin-top:8px; display:flex; justify-content:space-between;">
+              <span>Model: ${modelName}</span>
+              <span>Latency: ${timeMs}ms</span>
+            </div>
             ${imageLink}
           </div>
           <div class="ft">
-            <span class="timer" id="tm">Closing in 10s</span>
+            <span class="timer" id="tm">Closing in 15s</span>
             <button class="close" id="cl">Close ✕</button>
           </div>
         </div>`;
 
       document.body.appendChild(host);
 
-      let t = 10;
+      let t = 15;
       const iv = setInterval(() => {
         t--;
         const el = shadow.getElementById('tm');
@@ -371,12 +423,17 @@ async function cropDataUrl(dataUrl, sel) {
   return canvas.convertToBlob({ type: 'image/png' });
 }
 
-async function uploadBlobToPredictApi(blob, token, apiUrl, sourceType = 'screenshot') {
+async function uploadBlobToPredictApi(blob, token, apiUrl, sourceType = 'screenshot', useGemini = true) {
   const formData = new FormData();
   formData.append('file', blob, 'captured-area.png');
   formData.append('source_type', sourceType);
+  
+  const endpoint = useGemini ? `${apiUrl}/predict-hybrid` : `${apiUrl}/predict`;
+  if (useGemini) {
+    formData.append('use_gemini', 'true');
+  }
 
-  const res = await fetch(`${apiUrl}/predict`, {
+  const res = await fetch(endpoint, {
     method: 'POST',
     headers: { 'Authorization': `Bearer ${token}` },
     body: formData,
