@@ -67,3 +67,6 @@ out/
 # SQLite database (contains user data)
 *.db
 backend/data/
+
+# SSL Certificates — NEVER commit private keys
+nginx/ssl/

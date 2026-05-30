@@ -1,0 +1,62 @@
+# ============================================================
+# Prometheus Configuration — AI Image Detector
+# Phase 4: Observability Stack
+# ============================================================
+# Prometheus scrapes the FastAPI backend every 10 seconds.
+# The /prometheus-metrics endpoint is restricted to internal
+# network traffic only (Nginx blocks external access).
+# ============================================================
+
+global:
+  scrape_interval: 10s          # Default scrape frequency
+  evaluation_interval: 15s       # Rule evaluation frequency
+  scrape_timeout: 8s
+  external_labels:
+    monitor: "ai-detector"
+    environment: "production"
+
+# Alerting configuration (optional — connect to Alertmanager)
+# alerting:
+#   alertmanagers:
+#     - static_configs:
+#         - targets: ["alertmanager:9093"]
+
+# Load alerting rules
+rule_files:
+  - "alerts.yml"
+
+scrape_configs:
+  # ── FastAPI Backend ──────────────────────────────────────
+  - job_name: "ai-detector-backend"
+    static_configs:
+      - targets: ["backend:8000"]
+        labels:
+          service: "fastapi"
+          component: "api"
+    metrics_path: "/prometheus-metrics"
+    scrape_interval: 10s
+
+  # ── Celery Worker (via Flower) ────────────────────────────
+  # Flower exposes Celery worker metrics at /metrics
+  - job_name: "celery-flower"
+    static_configs:
+      - targets: ["flower:5555"]
+        labels:
+          service: "celery"
+          component: "worker"
+    metrics_path: "/metrics"
+    scrape_interval: 15s
+
+  # ── Redis ─────────────────────────────────────────────────
+  # If using redis_exporter sidecar (optional)
+  # - job_name: "redis"
+  #   static_configs:
+  #     - targets: ["redis-exporter:9121"]
+  #   scrape_interval: 15s
+
+  # ── Prometheus self-monitoring ────────────────────────────
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+        labels:
+          service: "prometheus"

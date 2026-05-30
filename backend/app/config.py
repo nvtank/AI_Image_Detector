@@ -21,10 +21,18 @@ class Settings(BaseSettings):
     # Database Config
     DATABASE_PATH: str = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "predictions.db")
 
-    # JWT Auth
+    # JWT Auth - Dual Token System
     JWT_SECRET_KEY: str = "change-me-in-production"
     JWT_ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # 24 hours
+    # Access Token: short-lived (15 minutes) — stored in memory/Authorization header
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
+    # Refresh Token: long-lived (7 days) — stored in DB, used to renew access tokens
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 7
+    # Separate secret for refresh tokens (defense-in-depth)
+    JWT_REFRESH_SECRET_KEY: str = "change-refresh-secret-in-production"
+
+    # RBAC - Admin users (comma-separated email list)
+    ADMIN_EMAILS: str = ""
 
     # Cloudinary
     CLOUDINARY_CLOUD_NAME: str = ""
@@ -35,6 +43,12 @@ class Settings(BaseSettings):
 
     # Upload limits
     MAX_UPLOAD_SIZE_MB: int = 10
+
+    # Gemini Config
+    GEMINI_API_KEY: str = ""
+    ENABLE_GEMINI_ANALYSIS: bool = True
+    GEMINI_MODEL: str = "gemini-2.5-flash"
+    GEMINI_TIMEOUT_SECONDS: int = 20
 
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -60,4 +74,14 @@ class Settings(BaseSettings):
                 )
         return True
 
+    def check_gemini(self):
+        """Log warning if Gemini enabled but API key is missing."""
+        if self.ENABLE_GEMINI_ANALYSIS and not self.GEMINI_API_KEY:
+            logger.warning(
+                "⚠️ ENABLE_GEMINI_ANALYSIS is true but GEMINI_API_KEY is missing. "
+                "Hybrid analysis will fall back to local-only predictions."
+            )
+        return True
+
 settings = Settings()
+settings.check_gemini()

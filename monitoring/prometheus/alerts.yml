@@ -1,0 +1,89 @@
+# ============================================================
+# Prometheus Alerting Rules — AI Image Detector
+# ============================================================
+groups:
+  - name: ai_detector_availability
+    interval: 30s
+    rules:
+      # Backend down
+      - alert: BackendDown
+        expr: up{job="ai-detector-backend"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "AI Detector Backend is DOWN"
+          description: "FastAPI backend has been unreachable for > 1 minute."
+
+      # High error rate (5xx > 5% of requests)
+      - alert: HighErrorRate
+        expr: |
+          rate(ai_detector_http_requests_total{status_code=~"5.."}[5m])
+          / rate(ai_detector_http_requests_total[5m]) > 0.05
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High HTTP 5xx error rate"
+          description: "More than 5% of requests returning 5xx errors."
+
+  - name: ai_detector_security
+    interval: 15s
+    rules:
+      # Failed login burst (> 10 in 2 minutes)
+      - alert: LoginBruteForce
+        expr: rate(ai_detector_failed_logins_total[2m]) * 120 > 10
+        for: 0m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Possible brute-force attack detected"
+          description: "More than 10 failed logins in 2 minutes."
+
+      # Rate limit spike (> 50 hits / minute)
+      - alert: RateLimitSpike
+        expr: rate(ai_detector_rate_limit_hits_total[1m]) * 60 > 50
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Rate limit violations spike"
+          description: "High rate of requests being rate-limited."
+
+  - name: ai_detector_performance
+    interval: 30s
+    rules:
+      # Slow inference (p95 > 15 seconds)
+      - alert: SlowInference
+        expr: |
+          histogram_quantile(0.95,
+            rate(ai_detector_inference_latency_seconds_bucket{model_type="hybrid"}[5m])
+          ) > 15
+        for: 3m
+        labels:
+          severity: warning
+        annotations:
+          summary: "AI inference is slow (p95 > 15s)"
+          description: "95th percentile hybrid inference latency exceeds 15 seconds."
+
+      # Celery queue backup (> 20 tasks pending)
+      - alert: CeleryQueueBacklog
+        expr: ai_detector_celery_queue_depth{queue="ai_inference"} > 20
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Celery queue backing up"
+          description: "More than 20 tasks pending in ai_inference queue. Consider scaling workers."
+
+      # High Gemini API error rate
+      - alert: GeminiAPIErrors
+        expr: |
+          rate(ai_detector_gemini_api_calls_total{status="error"}[5m])
+          / rate(ai_detector_gemini_api_calls_total[5m]) > 0.2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Gemini API error rate > 20%"
+          description: "Gemini API is returning errors for >20% of calls."

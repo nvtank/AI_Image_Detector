@@ -138,6 +138,8 @@ captureBtn.addEventListener('click', async () => {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!tab) return;
 
+  const useGemini = document.getElementById('extensionUseGemini').checked;
+
   // Close popup so overlay is visible
   window.close();
 
@@ -145,6 +147,7 @@ captureBtn.addEventListener('click', async () => {
     type: 'START_CAPTURE_AREA',
     tabId: tab.id,
     windowId: tab.windowId,
+    useGemini: useGemini
   });
 });
 
@@ -175,6 +178,8 @@ analyzeBtn.addEventListener('click', async () => {
   const token = (await storage.get(['access_token'])).access_token;
   if (!token) { showError('Please log in first.'); return; }
 
+  const useGemini = document.getElementById('extensionUseGemini').checked;
+
   analyzeBtn.disabled = true;
   hideError();
   hideResult();
@@ -184,7 +189,12 @@ analyzeBtn.addEventListener('click', async () => {
     const formData = new FormData();
     formData.append('file', selectedFile);
 
-    const res = await fetch(`${API_URL}/predict`, {
+    const endpoint = useGemini ? `${API_URL}/predict-hybrid` : `${API_URL}/predict`;
+    if (useGemini) {
+      formData.append('use_gemini', 'true');
+    }
+
+    const res = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${token}` },
       body: formData,
@@ -225,11 +235,24 @@ function showAuthSection() {
 
 function showResult(data) {
   resultBox.classList.remove('hidden');
-  resultLabel.textContent = data.label;
-  resultHeader.className = 'result-header ' + (data.label === 'FAKE' ? 'fake' : 'real');
-  resultConfidence.textContent = (data.confidence * 100).toFixed(2) + '%';
-  resultModel.textContent = data.model_name;
-  resultTime.textContent = data.processing_time_ms + ' ms';
+  
+  const hasHybrid = !!data.final_decision;
+  const decision = hasHybrid ? data.final_decision : data.label;
+  const confidence = hasHybrid ? data.local_model.confidence : data.confidence;
+  const model = hasHybrid ? data.local_model.model_name : data.model_name;
+  const time = hasHybrid ? data.local_model.processing_time_ms : data.processing_time_ms;
+
+  resultLabel.textContent = decision;
+  
+  let headerClass = 'result-header ';
+  if (decision === 'FAKE') headerClass += 'fake';
+  else if (decision === 'REAL') headerClass += 'real';
+  else headerClass += 'uncertain';
+
+  resultHeader.className = headerClass;
+  resultConfidence.textContent = (confidence * 100).toFixed(2) + '%';
+  resultModel.textContent = model;
+  resultTime.textContent = time + ' ms';
 }
 
 function showError(msg) {
