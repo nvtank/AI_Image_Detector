@@ -1,44 +1,34 @@
 "use client";
 
-/**
- * NotificationBell — Real-Time Notification UI
- * =============================================
- * Bell icon in the Navbar with:
- *   - Unread badge count (animated pulse when > 0)
- *   - Dropdown notification list
- *   - WS connection status indicator (green dot = connected)
- *   - Per-notification read/dismiss
- *   - "Mark all read" + "Clear all" actions
- */
-
 import { useState, useRef, useEffect } from "react";
 import { useNotifications, AppNotification } from "@/context/NotificationContext";
 
-const SEVERITY_STYLES: Record<string, { bg: string; border: string; icon: string }> = {
-  info:    { bg: "bg-blue-400/10",   border: "border-blue-400/30",   icon: "ℹ️" },
-  success: { bg: "bg-green-400/10",  border: "border-green-400/30",  icon: "✅" },
-  warning: { bg: "bg-amber-400/10",  border: "border-amber-400/30",  icon: "⚠️" },
-  error:   { bg: "bg-red-400/10",    border: "border-red-400/30",    icon: "🚨" },
-};
-
 function NotificationItem({ n, onRead }: { n: AppNotification; onRead: (id: string) => void }) {
-  const style = SEVERITY_STYLES[n.severity] ?? SEVERITY_STYLES.info;
   return (
     <div
-      className={`p-3 rounded-xl border transition-all cursor-pointer hover:opacity-90 ${style.bg} ${style.border} ${!n.read ? "ring-1 ring-inset ring-white/10" : "opacity-70"}`}
       onClick={() => onRead(n.id)}
+      style={{
+        padding: "0.75rem 0.85rem",
+        borderRadius: 10,
+        cursor: "pointer",
+        background: n.read ? "transparent" : "var(--bg-2)",
+        border: "1px solid var(--border)",
+        opacity: n.read ? 0.55 : 1,
+        transition: "opacity 0.15s ease, background 0.15s ease",
+      }}
     >
-      <div className="flex items-start gap-2">
-        <span className="text-base flex-shrink-0 mt-0.5">{style.icon}</span>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-slate-200 leading-tight">{n.title}</p>
-          <p className="text-xs text-slate-400 mt-0.5 leading-snug line-clamp-2">{n.message}</p>
-          <p className="text-[10px] text-slate-600 mt-1">
-            {n.timestamp.toLocaleTimeString("vi-VN")}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{ fontSize: "0.8125rem", fontWeight: 600, color: "var(--text-1)", marginBottom: 2 }}>{n.title}</p>
+          <p style={{ fontSize: "0.75rem", color: "var(--text-3)", lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+            {n.message}
+          </p>
+          <p style={{ fontSize: "0.6875rem", color: "var(--text-4)", marginTop: 4 }}>
+            {n.timestamp.toLocaleTimeString()}
           </p>
         </div>
         {!n.read && (
-          <span className="w-2 h-2 rounded-full bg-blue-400 flex-shrink-0 mt-1.5" />
+          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--text-2)", flexShrink: 0, marginTop: 5 }} />
         )}
       </div>
     </div>
@@ -46,112 +36,105 @@ function NotificationItem({ n, onRead }: { n: AppNotification; onRead: (id: stri
 }
 
 export default function NotificationBell() {
-  const { notifications, unreadCount, isConnected, markRead, markAllRead, clearAll } =
-    useNotifications();
+  const { notifications, unreadCount, isConnected, markRead, markAllRead, clearAll } = useNotifications();
   const [open, setOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLDivElement>(null);
 
-  // Close on outside click
   useEffect(() => {
-    const handleClick = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    };
-    if (open) document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
+    const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
+    if (open) document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
   }, [open]);
 
   return (
-    <div className="relative" ref={dropdownRef}>
-      {/* Bell Button */}
+    <div style={{ position: "relative" }} ref={ref}>
+      {/* Bell button */}
       <button
-        onClick={() => setOpen((v) => !v)}
-        className="relative p-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
-        aria-label={`${unreadCount} unread notifications`}
-        id="notification-bell-btn"
+        onClick={() => setOpen(v => !v)}
+        aria-label={`${unreadCount} notifications`}
+        style={{
+          position: "relative",
+          padding: "0.35rem",
+          borderRadius: 8,
+          background: "none",
+          border: "none",
+          cursor: "pointer",
+          color: "var(--text-3)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+        }}
       >
-        {/* Bell SVG */}
-        <svg
-          className={`w-5 h-5 transition-transform ${open ? "scale-110" : ""}`}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-          />
+        {/* Simple bell shape via border */}
+        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75}
+            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
         </svg>
 
-        {/* Unread badge */}
+        {/* Unread count */}
         {unreadCount > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 text-[10px] font-black rounded-full bg-red-500 text-white flex items-center justify-center animate-bounce-subtle">
+          <span style={{
+            position: "absolute", top: -2, right: -2,
+            minWidth: 16, height: 16,
+            fontSize: "0.625rem", fontWeight: 700,
+            background: "var(--text-1)", color: "var(--accent-fg)",
+            borderRadius: 99, display: "flex", alignItems: "center", justifyContent: "center",
+            padding: "0 3px",
+          }}>
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
 
-        {/* WS connection indicator */}
-        <span
-          className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-slate-900 ${
-            isConnected ? "bg-green-400" : "bg-slate-600"
-          }`}
-          title={isConnected ? "Real-time connected" : "Disconnected — using polling"}
-        />
+        {/* WS status dot */}
+        <span style={{
+          position: "absolute", bottom: 0, right: 0,
+          width: 7, height: 7, borderRadius: "50%",
+          background: isConnected ? "#6b7280" : "var(--border-2)",
+          border: "1.5px solid var(--bg)",
+        }} title={isConnected ? "WebSocket connected" : "Polling fallback"} />
       </button>
 
       {/* Dropdown */}
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-80 bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl z-50 overflow-hidden">
+        <div
+          className="card fade-up"
+          style={{
+            position: "absolute", right: 0, top: "calc(100% + 8px)",
+            width: 300, zIndex: 50, overflow: "hidden",
+            boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
+          }}
+        >
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-bold text-slate-200">Thông báo</span>
-              <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold ${
-                isConnected
-                  ? "bg-green-400/15 text-green-400"
-                  : "bg-slate-700 text-slate-400"
-              }`}>
-                {isConnected ? "⚡ Live" : "○ Offline"}
+          <div style={{ padding: "0.85rem 1rem", borderBottom: "1px solid var(--border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--text-1)" }}>Notifications</span>
+              <span style={{
+                fontSize: "0.6875rem", fontWeight: 600, padding: "1px 6px", borderRadius: 4,
+                background: "var(--bg-3)", color: isConnected ? "var(--text-2)" : "var(--text-4)",
+              }}>
+                {isConnected ? "Live" : "Polling"}
               </span>
             </div>
-            <div className="flex gap-2">
+            <div style={{ display: "flex", gap: 8 }}>
               {unreadCount > 0 && (
-                <button
-                  onClick={markAllRead}
-                  className="text-[10px] text-slate-400 hover:text-slate-200 transition-colors"
-                >
-                  Đọc tất cả
+                <button onClick={markAllRead} style={{ fontSize: "0.75rem", color: "var(--text-3)", background: "none", border: "none", cursor: "pointer" }}>
+                  Mark all read
                 </button>
               )}
               {notifications.length > 0 && (
-                <button
-                  onClick={clearAll}
-                  className="text-[10px] text-red-400/70 hover:text-red-400 transition-colors"
-                >
-                  Xóa tất cả
+                <button onClick={clearAll} style={{ fontSize: "0.75rem", color: "var(--text-4)", background: "none", border: "none", cursor: "pointer" }}>
+                  Clear
                 </button>
               )}
             </div>
           </div>
 
-          {/* Notification List */}
-          <div className="max-h-80 overflow-y-auto p-3 space-y-2">
+          {/* List */}
+          <div style={{ maxHeight: 320, overflowY: "auto", padding: "0.65rem", display: "flex", flexDirection: "column", gap: 6 }}>
             {notifications.length === 0 ? (
-              <div className="py-8 text-center">
-                <span className="text-3xl block mb-2">🔔</span>
-                <p className="text-sm text-slate-500">Không có thông báo nào</p>
-                {isConnected && (
-                  <p className="text-xs text-slate-600 mt-1">Kết nối real-time đang hoạt động</p>
-                )}
+              <div style={{ padding: "2.5rem 0", textAlign: "center", color: "var(--text-4)", fontSize: "0.875rem" }}>
+                No notifications
               </div>
             ) : (
-              notifications.map((n) => (
-                <NotificationItem key={n.id} n={n} onRead={markRead} />
-              ))
+              notifications.map(n => <NotificationItem key={n.id} n={n} onRead={markRead} />)
             )}
           </div>
         </div>

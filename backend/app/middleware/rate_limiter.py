@@ -20,8 +20,9 @@ logger = logging.getLogger(__name__)
 # Initialize Limiter using IP address as the default key
 limiter = Limiter(
     key_func=get_remote_address,
-    headers_enabled=True
+    headers_enabled=False
 )
+
 
 async def custom_rate_limit_handler(request: Request, exc: RateLimitExceeded) -> Response:
     """
