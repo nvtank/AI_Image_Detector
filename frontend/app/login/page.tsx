@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -11,6 +12,7 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
+  const { t } = useLanguage();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -28,74 +30,205 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-[70vh]">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-extrabold">Welcome back</h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-2">Sign in to your account</p>
+    <div className="flex min-h-[85vh] -mt-8 -mx-4 sm:-mx-6 lg:-mx-8">
+      {/* Left Panel — Gradient Branding */}
+      <div
+        className="hidden lg:flex lg:w-[55%] relative overflow-hidden"
+        style={{
+          background: "linear-gradient(135deg, #6366f1, #8b5cf6, #a78bfa)",
+        }}
+      >
+        {/* Decorative floating shapes */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div
+            className="float-anim absolute"
+            style={{
+              width: 300, height: 300, borderRadius: "50%",
+              background: "rgba(255,255,255,0.08)",
+              top: "10%", left: "-5%",
+            }}
+          />
+          <div
+            className="float-anim-delay absolute"
+            style={{
+              width: 200, height: 200, borderRadius: "50%",
+              background: "rgba(255,255,255,0.06)",
+              top: "60%", right: "10%",
+            }}
+          />
+          <div
+            className="float-anim-slow absolute"
+            style={{
+              width: 150, height: 150, borderRadius: "30%",
+              background: "rgba(255,255,255,0.05)",
+              top: "35%", right: "30%",
+              transform: "rotate(45deg)",
+            }}
+          />
+          <div
+            className="float-anim absolute"
+            style={{
+              width: 100, height: 100, borderRadius: "50%",
+              background: "rgba(255,255,255,0.04)",
+              bottom: "15%", left: "20%",
+            }}
+          />
         </div>
 
-        <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-8">
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                Email address
-              </label>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                Password
-              </label>
-              <input
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-              />
-            </div>
-
-            {error && (
-              <div className="p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl text-sm border border-red-200 dark:border-red-800/30">
-                {error}
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full py-3 px-6 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-bold rounded-xl transition-colors flex justify-center items-center gap-2"
-            >
-              {isLoading ? (
-                <>
-                  <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                  </svg>
-                  Signing in...
-                </>
-              ) : (
-                "Sign In"
-              )}
-            </button>
-          </form>
-
-          <p className="text-center text-sm text-slate-500 dark:text-slate-400 mt-6">
-            Don't have an account?{" "}
-            <Link href="/signup" className="text-blue-600 dark:text-blue-400 font-semibold hover:underline">
-              Sign up
-            </Link>
+        {/* Content */}
+        <div className="relative z-10 flex flex-col items-center justify-center w-full px-12 text-white">
+          {/* AI Shield Icon */}
+          <div
+            className="pulse-glow mb-8"
+            style={{
+              width: 80, height: 80, borderRadius: 20,
+              background: "rgba(255,255,255,0.15)",
+              backdropFilter: "blur(10px)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: "2.5rem",
+            }}
+          >
+            🛡️
+          </div>
+          <h2 style={{
+            fontSize: "2.5rem", fontWeight: 800,
+            letterSpacing: "-0.03em", marginBottom: "0.75rem",
+            textAlign: "center",
+          }}>
+            {t("login.tagline")}
+          </h2>
+          <p style={{
+            fontSize: "1.125rem", opacity: 0.85,
+            textAlign: "center", maxWidth: 360,
+            lineHeight: 1.6,
+          }}>
+            {t("login.taglineDesc")}
           </p>
+
+          {/* Stats mini */}
+          <div
+            style={{
+              marginTop: "3rem",
+              display: "flex", gap: "2.5rem",
+            }}
+          >
+            {[
+              { val: "98.6%", label: "F1 Score" },
+              { val: "<200ms", label: "Inference" },
+              { val: "4+", label: "Models" },
+            ].map((s) => (
+              <div key={s.label} style={{ textAlign: "center" }}>
+                <p style={{ fontSize: "1.5rem", fontWeight: 800 }}>{s.val}</p>
+                <p style={{ fontSize: "0.75rem", opacity: 0.7, marginTop: 2 }}>{s.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Right Panel — Login Form */}
+      <div className="flex-1 flex items-center justify-center px-6 lg:px-12 py-12"
+           style={{ background: "var(--bg)" }}>
+        <div className="w-full max-w-[400px] fade-up">
+
+          {/* Mobile branding (shown only on small screens) */}
+          <div className="lg:hidden text-center mb-8">
+            <div style={{
+              width: 48, height: 48, borderRadius: 14, margin: "0 auto 1rem",
+              background: "linear-gradient(135deg, var(--gradient-start), var(--gradient-end))",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              color: "#fff", fontSize: "1.25rem", fontWeight: 800,
+            }}>
+              AI
+            </div>
+          </div>
+
+          <div style={{ textAlign: "center", marginBottom: "2rem" }}>
+            <h1 style={{
+              fontSize: "1.875rem", fontWeight: 800,
+              letterSpacing: "-0.03em", color: "var(--text-1)",
+            }}>
+              {t("login.title")}
+            </h1>
+            <p style={{ color: "var(--text-3)", marginTop: "0.5rem", fontSize: "0.9375rem" }}>
+              {t("login.subtitle")}
+            </p>
+          </div>
+
+          <div className="card" style={{ padding: "2rem", borderRadius: 20 }}>
+            <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+              <div>
+                <label style={{
+                  display: "block", fontSize: "0.8125rem",
+                  fontWeight: 600, color: "var(--text-2)", marginBottom: "0.5rem",
+                }}>
+                  {t("login.email")}
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder={t("login.emailPlaceholder")}
+                />
+              </div>
+              <div>
+                <label style={{
+                  display: "block", fontSize: "0.8125rem",
+                  fontWeight: 600, color: "var(--text-2)", marginBottom: "0.5rem",
+                }}>
+                  {t("login.password")}
+                </label>
+                <input
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder={t("login.passwordPlaceholder")}
+                />
+              </div>
+
+              {error && (
+                <div style={{
+                  fontSize: "0.8125rem", color: "var(--danger)",
+                  background: "rgba(239, 68, 68, 0.08)",
+                  border: "1px solid rgba(239, 68, 68, 0.2)",
+                  borderRadius: 12, padding: "0.75rem 1rem",
+                  display: "flex", alignItems: "center", gap: "0.5rem",
+                }}>
+                  <span>⚠️</span> {error}
+                </div>
+              )}
+
+              <button type="submit" disabled={isLoading} className="btn-primary"
+                style={{ padding: "0.85rem", fontSize: "0.9375rem", borderRadius: 12, marginTop: "0.25rem" }}>
+                {isLoading ? <span className="spinner" /> : t("login.submit")}
+              </button>
+            </form>
+
+            {/* Divider */}
+            <div style={{
+              display: "flex", alignItems: "center", gap: "1rem",
+              margin: "1.5rem 0",
+            }}>
+              <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
+              <span style={{ fontSize: "0.75rem", color: "var(--text-4)", fontWeight: 500 }}>or</span>
+              <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
+            </div>
+
+            <p style={{
+              textAlign: "center", fontSize: "0.875rem",
+              color: "var(--text-3)",
+            }}>
+              {t("login.noAccount")}{" "}
+              <Link href="/signup" style={{
+                color: "var(--accent)", fontWeight: 700,
+                textDecoration: "none",
+              }}>
+                {t("login.signupLink")}
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     </div>
