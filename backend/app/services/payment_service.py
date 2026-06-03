@@ -127,11 +127,11 @@ def create_payment_link(
             cancel_url=cancel_url or settings.PAYOS_CANCEL_URL,
             return_url=return_url or settings.PAYOS_RETURN_URL,
         )
-        response = payos.createPaymentLink(req)
+        response = payos.payment_requests.create(req)
         checkout_url = response.checkout_url
         qr_code = response.qr_code
     except Exception as e:
-        logger.error(f"[PayOS] createPaymentLink failed: {e}")
+        logger.error(f"[PayOS] payment_requests.create failed: {e}")
         raise RuntimeError(f"payOS API error: {str(e)}")
 
     # Persist order to DB
@@ -172,10 +172,10 @@ def get_order_status_from_payos(order_code: int) -> Optional[str]:
     """
     try:
         payos = _get_payos()
-        info = payos.getPaymentLinkInformation(order_code)
+        info = payos.payment_requests.get(order_code)
         return str(info.status).upper()   # PaymentLinkStatus enum → string
     except Exception as e:
-        logger.warning(f"[PayOS] getPaymentLinkInformation failed for {order_code}: {e}")
+        logger.warning(f"[PayOS] payment_requests.get failed for {order_code}: {e}")
         return None
 
 
