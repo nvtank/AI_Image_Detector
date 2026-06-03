@@ -45,9 +45,9 @@ const FILTER_I18N: Record<string, string> = {
 };
 
 function verdictStyle(v: string): { color: string; bg: string } {
-  if (v === "FAKE")      return { color: "var(--text-1)", bg: "var(--bg-3)" };
-  if (v === "REAL")      return { color: "var(--text-1)", bg: "var(--bg-3)" };
-  return                        { color: "var(--text-3)", bg: "var(--bg-2)" };
+  if (v === 'FAKE') return { color: '#ffffff', bg: 'var(--negative-bg)' };
+  if (v === 'REAL') return { color: 'var(--positive-deep)', bg: 'var(--primary-pale)' };
+  return { color: 'var(--warning-content)', bg: '#fff8e1' };
 }
 
 function HistoryContent() {
@@ -87,10 +87,10 @@ function HistoryContent() {
       {/* Header */}
       <div style={{ marginBottom: "2rem", display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "1.25rem" }}>
         <div>
-          <h1 style={{ fontSize: "1.75rem", fontWeight: 700, letterSpacing: "-0.03em", color: "var(--text-1)" }}>
+          <h1 style={{ fontSize: 32, fontWeight: 600, letterSpacing: "-0.96px", color: "var(--ink)" }}>
             {t('history.title')}
           </h1>
-          <p style={{ color: "var(--text-3)", marginTop: "0.35rem", fontSize: "0.9375rem" }}>
+          <p style={{ color: "var(--body)", marginTop: "0.35rem", fontSize: "0.9375rem" }}>
             {t('history.subtitle')}
           </p>
         </div>
@@ -98,8 +98,8 @@ function HistoryContent() {
         {/* Filter tabs */}
         <div style={{
           display: "flex", gap: 4, flexWrap: "wrap",
-          background: "var(--bg-2)", border: "1px solid var(--border)",
-          borderRadius: 10, padding: 4,
+          background: "var(--canvas)", border: "none",
+          borderRadius: "var(--r-md)", padding: 4,
         }}>
           {FILTER_KEYS.map(f => (
             <button
@@ -107,11 +107,12 @@ function HistoryContent() {
               onClick={() => setFilter(f)}
               style={{
                 padding: "0.3rem 0.75rem",
-                borderRadius: 7, fontSize: "0.8125rem", fontWeight: filter === f ? 600 : 400,
-                background: filter === f ? "var(--bg)" : "transparent",
-                color: filter === f ? "var(--text-1)" : "var(--text-4)",
-                border: filter === f ? "1px solid var(--border)" : "1px solid transparent",
+                borderRadius: "var(--r-sm)", fontSize: "0.8125rem", fontWeight: filter === f ? 600 : 400,
+                background: filter === f ? "var(--primary-pale)" : "transparent",
+                color: filter === f ? "var(--ink-deep)" : "var(--mute)",
+                border: "none",
                 cursor: "pointer",
+                transition: "background 0.15s ease, color 0.15s ease",
               }}
             >
               {t(FILTER_I18N[f])}
@@ -129,15 +130,15 @@ function HistoryContent() {
 
       {/* Error */}
       {error && (
-        <p style={{ padding: "0.75rem 1rem", background: "var(--bg-2)", border: "1px solid var(--border)", borderRadius: 10, fontSize: "0.875rem", color: "var(--text-3)", marginBottom: "1.5rem" }}>
+        <p style={{ padding: "0.75rem 1rem", background: "var(--canvas)", border: "1px solid var(--canvas-soft)", borderRadius: "var(--r-md)", fontSize: "0.875rem", color: "var(--negative)", marginBottom: "1.5rem" }}>
           {error}
         </p>
       )}
 
       {/* Empty */}
       {!isLoading && !error && filtered.length === 0 && (
-        <div style={{ textAlign: "center", padding: "5rem 0", color: "var(--text-4)" }}>
-          <p style={{ fontSize: "1rem", fontWeight: 500, color: "var(--text-3)" }}>{t('history.noEntries')}</p>
+        <div style={{ textAlign: "center", padding: "5rem 0", color: "var(--mute)" }}>
+          <p style={{ fontSize: "1rem", fontWeight: 500, color: "var(--body)" }}>{t('history.noEntries')}</p>
           <p style={{ fontSize: "0.875rem", marginTop: 4 }}>{t('history.noEntriesSub')}</p>
         </div>
       )}
@@ -153,12 +154,12 @@ function HistoryContent() {
                 key={log.id}
                 onClick={() => setSelected(log)}
                 className="card"
-                style={{ overflow: "hidden", cursor: "pointer", transition: "box-shadow 0.15s ease" }}
-                onMouseEnter={e => (e.currentTarget.style.boxShadow = "0 4px 20px rgba(0,0,0,0.08)")}
+                style={{ borderRadius: "var(--r-xl)", overflow: "hidden", cursor: "pointer", transition: "box-shadow 0.2s ease" }}
+                onMouseEnter={e => (e.currentTarget.style.boxShadow = "0 4px 20px rgba(0,0,0,0.06)")}
                 onMouseLeave={e => (e.currentTarget.style.boxShadow = "")}
               >
                 {/* Thumbnail */}
-                <div style={{ position: "relative", aspectRatio: "1/1", background: "var(--bg-2)" }}>
+                <div style={{ position: "relative", aspectRatio: "1/1", background: "var(--canvas-soft)" }}>
                   <Image
                     src={log.thumbnail_url || log.image_url || PLACEHOLDER}
                     alt={log.image_name || "Image"}
@@ -170,22 +171,22 @@ function HistoryContent() {
                   <span style={{
                     position: "absolute", top: 8, right: 8,
                     fontSize: "0.6875rem", fontWeight: 700, letterSpacing: "0.05em",
-                    padding: "2px 8px", borderRadius: 99,
+                    padding: "2px 8px", borderRadius: "var(--r-pill)",
                     background: vs.bg, color: vs.color,
-                    border: "1px solid var(--border)",
+                    border: "none",
                   }}>
                     {v}
                   </span>
                 </div>
 
                 {/* Info */}
-                <div style={{ padding: "0.85rem 1rem" }}>
-                  <p style={{ fontSize: "0.8125rem", fontWeight: 600, color: "var(--text-1)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                <div style={{ padding: "var(--sp-md) var(--sp-lg)" }}>
+                  <p style={{ fontSize: "0.8125rem", fontWeight: 600, color: "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                     {log.image_name || t('history.untitled')}
                   </p>
                   <div style={{ marginTop: "0.5rem", display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ fontSize: "0.75rem", color: "var(--text-4)" }}>{(log.confidence * 100).toFixed(0)}% {t('history.conf')}</span>
-                    <span style={{ fontSize: "0.75rem", color: "var(--text-4)" }}>{fmt(log.created_at)}</span>
+                    <span style={{ fontSize: "0.75rem", color: "var(--mute)" }}>{(log.confidence * 100).toFixed(0)}% {t('history.conf')}</span>
+                    <span style={{ fontSize: "0.75rem", color: "var(--mute)" }}>{fmt(log.created_at)}</span>
                   </div>
                 </div>
               </div>
@@ -198,24 +199,24 @@ function HistoryContent() {
       {selected && (
         <div
           onClick={() => setSelected(null)}
-          style={{ position: "fixed", inset: 0, zIndex: 50, background: "rgba(0,0,0,0.45)", display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem" }}
+          style={{ position: "fixed", inset: 0, zIndex: 50, background: "rgba(14,15,12,0.5)", display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem" }}
         >
           <div
             onClick={e => e.stopPropagation()}
             className="card fade-up"
-            style={{ width: "100%", maxWidth: 760, maxHeight: "88vh", overflowY: "auto", display: "flex", flexDirection: "column" }}
+            style={{ width: "100%", maxWidth: 760, maxHeight: "88vh", overflowY: "auto", display: "flex", flexDirection: "column", borderRadius: "var(--r-xl)" }}
           >
             {/* Modal header */}
-            <div style={{ padding: "1.25rem 1.5rem", borderBottom: "1px solid var(--border)", display: "flex", justifyContent: "space-between", alignItems: "center", position: "sticky", top: 0, background: "var(--bg)", zIndex: 10 }}>
+            <div style={{ padding: "1.25rem 1.5rem", borderBottom: "1px solid var(--canvas-soft)", display: "flex", justifyContent: "space-between", alignItems: "center", position: "sticky", top: 0, background: "var(--canvas)", zIndex: 10, borderRadius: "var(--r-xl) var(--r-xl) 0 0" }}>
               <div>
-                <p style={{ fontSize: "0.6875rem", fontWeight: 600, letterSpacing: "0.06em", color: "var(--text-4)", textTransform: "uppercase", marginBottom: 2 }}>
+                <p className="caption" style={{ fontWeight: 600, letterSpacing: "0.06em", color: "var(--mute)", textTransform: "uppercase", marginBottom: 2 }}>
                   {t('history.report')} #{selected.id}
                 </p>
-                <h3 style={{ fontSize: "1rem", fontWeight: 700, color: "var(--text-1)" }}>
+                <h3 style={{ fontSize: 16, fontWeight: 700, color: "var(--ink)" }}>
                   {selected.image_name || t('history.screenCapture')}
                 </h3>
               </div>
-              <button onClick={() => setSelected(null)} style={{ color: "var(--text-3)", background: "none", border: "none", cursor: "pointer", fontSize: "1.25rem", lineHeight: 1, padding: "0.25rem" }}>
+              <button onClick={() => setSelected(null)} style={{ color: "var(--body)", background: "none", border: "none", cursor: "pointer", fontSize: "1.25rem", lineHeight: 1, padding: "0.25rem" }}>
                 ×
               </button>
             </div>
@@ -224,7 +225,7 @@ function HistoryContent() {
             <div style={{ padding: "1.5rem", display: "grid", gridTemplateColumns: "1fr 1.4fr", gap: "1.5rem" }} className="max-sm:grid-cols-1">
 
               {/* Image */}
-              <div style={{ position: "relative", aspectRatio: "1/1", borderRadius: 10, overflow: "hidden", background: "var(--bg-2)", border: "1px solid var(--border)" }}>
+              <div style={{ position: "relative", aspectRatio: "1/1", borderRadius: "var(--r-lg)", overflow: "hidden", background: "var(--canvas-soft)", border: "1px solid var(--canvas-soft)" }}>
                 <Image src={selected.image_url || PLACEHOLDER} alt="Full view" fill style={{ objectFit: "contain" }} unoptimized />
               </div>
 
@@ -232,13 +233,13 @@ function HistoryContent() {
               <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
 
                 {/* Verdict */}
-                <div className="card-inner" style={{ padding: "1rem" }}>
-                  <p style={{ fontSize: "0.6875rem", fontWeight: 600, letterSpacing: "0.06em", color: "var(--text-4)", textTransform: "uppercase", marginBottom: 4 }}>{t('history.finalVerdict')}</p>
-                  <p style={{ fontSize: "2rem", fontWeight: 800, letterSpacing: "-0.03em", color: "var(--text-1)" }}>
+                <div className="card-inner" style={{ padding: "1rem", borderRadius: "var(--r-lg)" }}>
+                  <p className="caption" style={{ fontWeight: 600, letterSpacing: "0.06em", color: "var(--mute)", textTransform: "uppercase", marginBottom: 4 }}>{t('history.finalVerdict')}</p>
+                  <p style={{ fontSize: 40, fontWeight: 900, letterSpacing: "-0.03em", color: "var(--ink)" }}>
                     {selected.final_decision || selected.label}
                   </p>
                   {selected.used_gemini && (
-                    <p style={{ fontSize: "0.75rem", color: "var(--text-3)", marginTop: 4 }}>
+                    <p style={{ fontSize: "0.75rem", color: "var(--body)", marginTop: 4 }}>
                       {selected.agreement_status === "agree" ? t('history.modelsAgreed') : t('history.modelsDisagreed')}
                     </p>
                   )}
@@ -252,28 +253,28 @@ function HistoryContent() {
                     { label: t('history.geminiOpinion'), val: selected.used_gemini ? (selected.gemini_predicted_label || "N/A") : t('history.off') },
                     { label: t('history.latency'), val: `${selected.processing_time_ms} ms` },
                   ].map(({ label, val }) => (
-                    <div key={label} className="card-inner" style={{ padding: "0.75rem" }}>
-                      <p style={{ fontSize: "0.6875rem", color: "var(--text-4)", marginBottom: 2 }}>{label}</p>
-                      <p style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--text-1)" }}>{val}</p>
+                    <div key={label} className="card-inner" style={{ padding: "0.75rem", borderRadius: "var(--r-lg)" }}>
+                      <p style={{ fontSize: "0.6875rem", color: "var(--mute)", marginBottom: 2 }}>{label}</p>
+                      <p style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--ink)" }}>{val}</p>
                     </div>
                   ))}
                 </div>
 
                 {/* Gemini reasoning */}
                 {selected.used_gemini && selected.gemini_reasoning_summary && (
-                  <div className="card-inner" style={{ padding: "0.85rem 1rem" }}>
-                    <p style={{ fontSize: "0.6875rem", fontWeight: 600, letterSpacing: "0.06em", color: "var(--text-4)", textTransform: "uppercase", marginBottom: 6 }}>{t('history.geminiReasoning')}</p>
-                    <p style={{ fontSize: "0.8125rem", color: "var(--text-2)", lineHeight: 1.65 }}>{selected.gemini_reasoning_summary}</p>
+                  <div className="card-inner" style={{ padding: "0.85rem 1rem", borderRadius: "var(--r-lg)", borderLeft: "3px solid var(--primary)" }}>
+                    <p className="caption" style={{ fontWeight: 600, letterSpacing: "0.06em", color: "var(--mute)", textTransform: "uppercase", marginBottom: 6 }}>{t('history.geminiReasoning')}</p>
+                    <p style={{ fontSize: "0.8125rem", color: "var(--body)", lineHeight: 1.65 }}>{selected.gemini_reasoning_summary}</p>
                   </div>
                 )}
 
                 {/* Visual signals */}
                 {selected.gemini_visual_signals && selected.gemini_visual_signals.length > 0 && (
-                  <div className="card-inner" style={{ padding: "0.85rem 1rem" }}>
-                    <p style={{ fontSize: "0.6875rem", fontWeight: 600, letterSpacing: "0.06em", color: "var(--text-4)", textTransform: "uppercase", marginBottom: 8 }}>{t('history.visualSignals')}</p>
+                  <div className="card-inner" style={{ padding: "0.85rem 1rem", borderRadius: "var(--r-lg)", borderLeft: "3px solid var(--accent-cyan)" }}>
+                    <p className="caption" style={{ fontWeight: 600, letterSpacing: "0.06em", color: "var(--mute)", textTransform: "uppercase", marginBottom: 8 }}>{t('history.visualSignals')}</p>
                     <ul style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                       {selected.gemini_visual_signals.map((s, i) => (
-                        <li key={i} style={{ fontSize: "0.8125rem", color: "var(--text-2)", paddingLeft: "0.75rem", borderLeft: "2px solid var(--border-2)" }}>
+                        <li key={i} style={{ fontSize: "0.8125rem", color: "var(--body)", paddingLeft: "0.75rem", borderLeft: "2px solid var(--primary)" }}>
                           {s}
                         </li>
                       ))}
@@ -284,7 +285,7 @@ function HistoryContent() {
             </div>
 
             {/* Modal footer */}
-            <div style={{ padding: "1rem 1.5rem", borderTop: "1px solid var(--border)", display: "flex", justifyContent: "flex-end", position: "sticky", bottom: 0, background: "var(--bg)" }}>
+            <div style={{ padding: "1rem 1.5rem", borderTop: "1px solid var(--canvas-soft)", display: "flex", justifyContent: "flex-end", position: "sticky", bottom: 0, background: "var(--canvas)", borderRadius: "0 0 var(--r-xl) var(--r-xl)" }}>
               <button onClick={() => setSelected(null)} className="btn-primary">
                 {t('history.close')}
               </button>

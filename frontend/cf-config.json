@@ -1,0 +1,143 @@
+{
+  "CallerReference": "ai-image-detector-1780200804",
+  "Comment": "AI Image Detector frontend S3 + backend EC2 API",
+  "Enabled": true,
+  "PriceClass": "PriceClass_100",
+  "DefaultRootObject": "index.html",
+  "Origins": {
+    "Quantity": 2,
+    "Items": [
+      {
+        "Id": "S3WebsiteOrigin",
+        "DomainName": "ai-image-detector-nvtank-995310839463.s3-website-ap-southeast-1.amazonaws.com",
+        "CustomOriginConfig": {
+          "HTTPPort": 80,
+          "HTTPSPort": 443,
+          "OriginProtocolPolicy": "http-only",
+          "OriginSslProtocols": {
+            "Quantity": 1,
+            "Items": ["TLSv1.2"]
+          }
+        }
+      },
+      {
+        "Id": "EC2ApiOrigin",
+        "DomainName": "ec2-18-142-250-229.ap-southeast-1.compute.amazonaws.com",
+        "CustomOriginConfig": {
+          "HTTPPort": 80,
+          "HTTPSPort": 443,
+          "OriginProtocolPolicy": "http-only",
+          "OriginSslProtocols": {
+            "Quantity": 1,
+            "Items": ["TLSv1.2"]
+          }
+        }
+      }
+    ]
+  },
+  "DefaultCacheBehavior": {
+    "TargetOriginId": "S3WebsiteOrigin",
+    "ViewerProtocolPolicy": "redirect-to-https",
+    "AllowedMethods": {
+      "Quantity": 2,
+      "Items": ["GET", "HEAD"],
+      "CachedMethods": {
+        "Quantity": 2,
+        "Items": ["GET", "HEAD"]
+      }
+    },
+    "ForwardedValues": {
+      "QueryString": false,
+      "Cookies": {
+        "Forward": "none"
+      }
+    },
+    "TrustedSigners": {
+      "Enabled": false,
+      "Quantity": 0
+    },
+    "TrustedKeyGroups": {
+      "Enabled": false,
+      "Quantity": 0
+    },
+    "MinTTL": 0,
+    "DefaultTTL": 86400,
+    "MaxTTL": 31536000,
+    "Compress": true
+  },
+  "CacheBehaviors": {
+    "Quantity": 1,
+    "Items": [
+      {
+        "PathPattern": "api/*",
+        "TargetOriginId": "EC2ApiOrigin",
+        "ViewerProtocolPolicy": "redirect-to-https",
+        "AllowedMethods": {
+          "Quantity": 7,
+          "Items": ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"],
+          "CachedMethods": {
+            "Quantity": 2,
+            "Items": ["GET", "HEAD"]
+          }
+        },
+        "ForwardedValues": {
+          "QueryString": true,
+          "Headers": {
+            "Quantity": 6,
+            "Items": [
+              "Authorization",
+              "Content-Type",
+              "Origin",
+              "Accept",
+              "Access-Control-Request-Method",
+              "Access-Control-Request-Headers"
+            ]
+          },
+          "Cookies": {
+            "Forward": "all"
+          }
+        },
+        "TrustedSigners": {
+          "Enabled": false,
+          "Quantity": 0
+        },
+        "TrustedKeyGroups": {
+          "Enabled": false,
+          "Quantity": 0
+        },
+        "MinTTL": 0,
+        "DefaultTTL": 0,
+        "MaxTTL": 0,
+        "Compress": true
+      }
+    ]
+  },
+  "CustomErrorResponses": {
+    "Quantity": 2,
+    "Items": [
+      {
+        "ErrorCode": 403,
+        "ResponsePagePath": "/index.html",
+        "ResponseCode": "200",
+        "ErrorCachingMinTTL": 0
+      },
+      {
+        "ErrorCode": 404,
+        "ResponsePagePath": "/index.html",
+        "ResponseCode": "200",
+        "ErrorCachingMinTTL": 0
+      }
+    ]
+  },
+  "Restrictions": {
+    "GeoRestriction": {
+      "RestrictionType": "none",
+      "Quantity": 0
+    }
+  },
+  "ViewerCertificate": {
+    "CloudFrontDefaultCertificate": true
+  },
+  "HttpVersion": "http2",
+  "IsIPV6Enabled": true
+}

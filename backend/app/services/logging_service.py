@@ -32,6 +32,7 @@ class LoggingService:
                     full_name TEXT NOT NULL,
                     email TEXT UNIQUE NOT NULL,
                     password_hash TEXT NOT NULL,
+                    role TEXT DEFAULT 'user',
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
@@ -83,6 +84,9 @@ class LoggingService:
     def _migrate_db(self):
         """Safe migration: add missing columns to existing tables without data loss."""
         new_columns = {
+            "users": [
+                ("role", "TEXT DEFAULT 'user'"),
+            ],
             "prediction_logs": [
                 ("user_id", "INTEGER"),
                 ("thumbnail_url", "TEXT"),

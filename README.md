@@ -33,7 +33,8 @@ project/
 cd backend
 
 # Tạo và kích hoạt virtual environment
-python -m venv .venv
+# Khuyến nghị Python 3.10 (theo `shell.nix`/Dockerfile). Python 3.13 có thể lỗi build `pydantic-core` với versions đang pin.
+python3.10 -m venv .venv
 source .venv/bin/activate   # Windows: .venv\Scripts\activate
 
 # Cài đặt dependencies
@@ -45,6 +46,17 @@ cp .env.example .env
 # Đặt file model weights vào backend/weights/best_model.pt
 
 # Chạy server
+uvicorn app.main:app --reload
+```
+
+Nếu bạn dùng Nix:
+
+```bash
+nix-shell
+cd backend
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
 

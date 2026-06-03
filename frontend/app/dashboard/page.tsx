@@ -26,7 +26,7 @@ function Skeleton({ h = 20, r = 8 }: { h?: number; r?: number }) {
   return (
     <div style={{
       height: h, borderRadius: r,
-      background: "var(--bg-3)",
+      background: "var(--canvas-soft)",
       animation: "pulse 1.5s ease infinite",
     }} />
   );
@@ -61,46 +61,48 @@ export default function DashboardPage() {
     <div style={{ maxWidth: 1100, margin: "0 auto", paddingBottom: "4rem" }} className="fade-up">
 
       {/* Header */}
-      <div style={{ marginBottom: "2.5rem" }}>
-        <h1 style={{ fontSize: "1.75rem", fontWeight: 700, letterSpacing: "-0.03em", color: "var(--text-1)" }}>
+      <div style={{ marginBottom: "var(--sp-3xl)" }}>
+        <h1 style={{ fontSize: 32, fontWeight: 600, letterSpacing: "-0.96px", color: "var(--ink)" }}>
           {t('dashboard.title')}
         </h1>
-        <p style={{ color: "var(--text-3)", marginTop: "0.35rem", fontSize: "0.9375rem" }}>
+        <p style={{ color: "var(--body)", marginTop: "var(--sp-sm)", fontSize: "0.9375rem" }}>
           {t('dashboard.subtitle')}
         </p>
       </div>
 
       {/* Active model banner */}
       {isLoading ? (
-        <div className="card" style={{ padding: "1.75rem", marginBottom: "1.5rem" }}>
+        <div className="card" style={{ padding: "1.75rem", marginBottom: "var(--sp-xl)" }}>
           <Skeleton h={16} r={6} />
           <div style={{ height: 8 }} />
           <Skeleton h={36} r={6} />
         </div>
       ) : (
-        <div className="card" style={{
+        <div style={{
+          background: "var(--ink)",
+          borderRadius: "var(--r-xl)",
           padding: "1.75rem 2rem",
-          marginBottom: "1.5rem",
+          marginBottom: "var(--sp-xl)",
           display: "flex", flexDirection: "row",
           justifyContent: "space-between", alignItems: "center",
           flexWrap: "wrap", gap: "1.25rem",
         }}>
           <div>
-            <p style={{ fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-4)", marginBottom: "0.4rem" }}>
+            <p style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--mute)", marginBottom: "0.4rem" }}>
               {t('dashboard.activeModel')}
             </p>
-            <h2 style={{ fontSize: "1.5rem", fontWeight: 700, letterSpacing: "-0.02em", color: "var(--text-1)" }}>
+            <h2 style={{ fontSize: 24, fontWeight: 700, letterSpacing: "-0.02em", color: "var(--canvas)" }}>
               {activeModel || "—"}
             </h2>
-            <p style={{ fontSize: "0.8125rem", color: "var(--text-4)", marginTop: 4 }}>
+            <p style={{ fontSize: "0.8125rem", color: "var(--mute)", marginTop: 4 }}>
               v{modelsInfo?.model_version} · {t('dashboard.production')}
             </p>
           </div>
           <div style={{ display: "flex", gap: "2.5rem" }}>
             {[{ label: t('dashboard.cleanF1'), val: cleanF1 }, { label: t('dashboard.robustF1'), val: robustF1 }].map(({ label, val }) => (
               <div key={label} style={{ textAlign: "right" }}>
-                <p style={{ fontSize: "0.75rem", color: "var(--text-4)", marginBottom: 2 }}>{label}</p>
-                <p style={{ fontSize: "1.875rem", fontWeight: 700, letterSpacing: "-0.03em", color: "var(--text-1)" }}>
+                <p style={{ fontSize: 12, color: "var(--mute)", marginBottom: 2 }}>{label}</p>
+                <p style={{ fontSize: 36, fontWeight: 900, letterSpacing: "-0.03em", color: "var(--primary)" }}>
                   {val}%
                 </p>
               </div>
@@ -110,32 +112,32 @@ export default function DashboardPage() {
       )}
 
       {/* Chart + Table */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.25rem", marginBottom: "1.5rem" }}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.25rem", marginBottom: "var(--sp-xl)" }}
            className="max-lg:grid-cols-1">
 
         {/* Bar chart */}
         <div className="card" style={{ padding: "1.5rem" }}>
-          <p style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--text-2)", marginBottom: "1.25rem" }}>
+          <p style={{ fontSize: 16, fontWeight: 600, color: "var(--ink)", marginBottom: "1.25rem" }}>
             {t('dashboard.chartTitle')}
           </p>
           {isLoading ? <Skeleton h={240} r={6} /> : (
             <ResponsiveContainer width="100%" height={240}>
               <BarChart data={chartData} margin={{ top: 4, right: 0, left: -24, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="2 4" vertical={false} stroke="var(--border)" />
+                <CartesianGrid strokeDasharray="2 4" vertical={false} stroke="var(--canvas-soft)" />
                 <XAxis dataKey="name" axisLine={false} tickLine={false}
-                  tick={{ fill: "var(--text-4)", fontSize: 11 }} dy={6} />
+                  tick={{ fill: "var(--mute)", fontSize: 11 }} dy={6} />
                 <YAxis domain={[90, 100]} axisLine={false} tickLine={false}
-                  tick={{ fill: "var(--text-4)", fontSize: 11 }} />
+                  tick={{ fill: "var(--mute)", fontSize: 11 }} />
                 <Tooltip
-                  cursor={{ fill: "var(--bg-2)" }}
+                  cursor={{ fill: "var(--canvas-soft)" }}
                   contentStyle={{
-                    background: "var(--bg)", border: "1px solid var(--border)",
-                    borderRadius: 10, boxShadow: "0 4px 16px rgba(0,0,0,0.08)",
-                    fontSize: 13, color: "var(--text-1)",
+                    background: "var(--canvas)", border: "1px solid var(--canvas-soft)",
+                    borderRadius: "var(--r-xl)", boxShadow: "0 4px 16px rgba(0,0,0,0.08)",
+                    fontSize: 13, color: "var(--ink)",
                   }}
                 />
-                <Bar dataKey="Clean F1" fill="var(--text-3)" radius={[4, 4, 0, 0]} barSize={20} />
-                <Bar dataKey="Robust F1" fill="var(--text-1)" radius={[4, 4, 0, 0]} barSize={20} />
+                <Bar dataKey="Clean F1" fill="var(--primary-neutral)" radius={[4, 4, 0, 0]} barSize={20} />
+                <Bar dataKey="Robust F1" fill="var(--primary)" radius={[4, 4, 0, 0]} barSize={20} />
               </BarChart>
             </ResponsiveContainer>
           )}
@@ -143,8 +145,8 @@ export default function DashboardPage() {
 
         {/* Table */}
         <div className="card" style={{ overflow: "hidden" }}>
-          <div style={{ padding: "1.5rem 1.5rem 1rem", borderBottom: "1px solid var(--border)" }}>
-            <p style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--text-2)" }}>{t('dashboard.tableTitle')}</p>
+          <div style={{ padding: "1.5rem 1.5rem 1rem", borderBottom: "1px solid var(--canvas-soft)" }}>
+            <p style={{ fontSize: 16, fontWeight: 600, color: "var(--ink)" }}>{t('dashboard.tableTitle')}</p>
           </div>
           {isLoading ? (
             <div style={{ padding: "1.5rem", display: "flex", flexDirection: "column", gap: 10 }}>
@@ -154,27 +156,27 @@ export default function DashboardPage() {
             <div style={{ overflowX: "auto" }}>
               <table style={{ width: "100%", fontSize: "0.8125rem", borderCollapse: "collapse" }}>
                 <thead>
-                  <tr style={{ borderBottom: "1px solid var(--border)" }}>
+                  <tr style={{ background: "var(--canvas-soft)" }}>
                     {[t('dashboard.colModel'), t('dashboard.colCleanF1'), t('dashboard.colRobustF1'), t('dashboard.colDrop')].map(h => (
-                      <th key={h} style={{ padding: "0.65rem 1rem", textAlign: "left", fontWeight: 500, color: "var(--text-4)", whiteSpace: "nowrap" }}>{h}</th>
+                      <th key={h} style={{ padding: "0.65rem 1rem", textAlign: "left", fontWeight: 600, fontSize: 12, letterSpacing: "0.05em", textTransform: "uppercase", color: "var(--mute)", whiteSpace: "nowrap" }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {metricsData.map(row => (
                     <tr key={row.model_name} style={{
-                      borderBottom: "1px solid var(--border)",
-                      background: row.model_name === activeModel ? "var(--bg-2)" : "transparent",
+                      borderBottom: "1px solid var(--canvas-soft)",
+                      background: row.model_name === activeModel ? "var(--primary-pale)" : "transparent",
                     }}>
-                      <td style={{ padding: "0.65rem 1rem", color: "var(--text-1)", fontWeight: row.model_name === activeModel ? 600 : 400, display: "flex", alignItems: "center", gap: 6 }}>
+                      <td style={{ padding: "0.65rem 1rem", color: "var(--ink)", fontWeight: row.model_name === activeModel ? 600 : 400, display: "flex", alignItems: "center", gap: 6 }}>
                         {row.model_name}
                         {row.model_name === activeModel && (
-                          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--text-2)", flexShrink: 0 }} />
+                          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--primary)", flexShrink: 0 }} />
                         )}
                       </td>
-                      <td style={{ padding: "0.65rem 1rem", color: "var(--text-2)" }}>{(row.clean_f1 * 100).toFixed(2)}%</td>
-                      <td style={{ padding: "0.65rem 1rem", color: "var(--text-1)", fontWeight: 600 }}>{(row.robust_avg_f1 * 100).toFixed(2)}%</td>
-                      <td style={{ padding: "0.65rem 1rem", color: "var(--text-3)" }}>{(row.avg_drop * 100).toFixed(2)}%</td>
+                      <td style={{ padding: "0.65rem 1rem", color: "var(--body)" }}>{(row.clean_f1 * 100).toFixed(2)}%</td>
+                      <td style={{ padding: "0.65rem 1rem", color: "var(--ink)", fontWeight: 600 }}>{(row.robust_avg_f1 * 100).toFixed(2)}%</td>
+                      <td style={{ padding: "0.65rem 1rem", color: "var(--mute)" }}>{(row.avg_drop * 100).toFixed(2)}%</td>
                     </tr>
                   ))}
                 </tbody>
@@ -185,8 +187,8 @@ export default function DashboardPage() {
       </div>
 
       {/* Methodology */}
-      <div className="card" style={{ padding: "1.75rem 2rem" }}>
-        <p style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--text-2)", marginBottom: "1.5rem" }}>
+      <div style={{ background: "var(--canvas-soft)", borderRadius: "var(--r-xl)", padding: "1.75rem 2rem" }}>
+        <p style={{ fontSize: 16, fontWeight: 600, color: "var(--ink)", marginBottom: "1.5rem" }}>
           {t('dashboard.methTitle')}
         </p>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "2rem" }}
@@ -206,13 +208,13 @@ export default function DashboardPage() {
             },
           ].map(({ n, title, body }) => (
             <div key={n}>
-              <p style={{ fontSize: "0.6875rem", fontWeight: 700, letterSpacing: "0.08em", color: "var(--text-4)", marginBottom: "0.5rem" }}>
+              <p style={{ fontSize: "0.6875rem", fontWeight: 700, letterSpacing: "0.08em", color: "var(--primary)", marginBottom: "0.5rem" }}>
                 {n}
               </p>
-              <h4 style={{ fontWeight: 600, color: "var(--text-1)", marginBottom: "0.5rem", fontSize: "0.9375rem" }}>
+              <h4 style={{ fontWeight: 600, color: "var(--ink)", marginBottom: "0.5rem", fontSize: "0.9375rem" }}>
                 {title}
               </h4>
-              <p style={{ fontSize: "0.8125rem", color: "var(--text-3)", lineHeight: 1.7 }}>{body}</p>
+              <p style={{ fontSize: "0.8125rem", color: "var(--body)", lineHeight: 1.7 }}>{body}</p>
             </div>
           ))}
         </div>

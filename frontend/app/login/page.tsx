@@ -31,11 +31,11 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-[85vh] -mt-8 -mx-4 sm:-mx-6 lg:-mx-8">
-      {/* Left Panel — Gradient Branding */}
+      {/* Left Panel — Ink Branding */}
       <div
         className="hidden lg:flex lg:w-[55%] relative overflow-hidden"
         style={{
-          background: "linear-gradient(135deg, #6366f1, #8b5cf6, #a78bfa)",
+          background: "var(--ink)",
         }}
       >
         {/* Decorative floating shapes */}
@@ -44,7 +44,7 @@ export default function LoginPage() {
             className="float-anim absolute"
             style={{
               width: 300, height: 300, borderRadius: "50%",
-              background: "rgba(255,255,255,0.08)",
+              background: "rgba(159, 232, 112, 0.08)",
               top: "10%", left: "-5%",
             }}
           />
@@ -52,7 +52,7 @@ export default function LoginPage() {
             className="float-anim-delay absolute"
             style={{
               width: 200, height: 200, borderRadius: "50%",
-              background: "rgba(255,255,255,0.06)",
+              background: "rgba(159, 232, 112, 0.06)",
               top: "60%", right: "10%",
             }}
           />
@@ -60,7 +60,7 @@ export default function LoginPage() {
             className="float-anim-slow absolute"
             style={{
               width: 150, height: 150, borderRadius: "30%",
-              background: "rgba(255,255,255,0.05)",
+              background: "rgba(159, 232, 112, 0.05)",
               top: "35%", right: "30%",
               transform: "rotate(45deg)",
             }}
@@ -69,20 +69,20 @@ export default function LoginPage() {
             className="float-anim absolute"
             style={{
               width: 100, height: 100, borderRadius: "50%",
-              background: "rgba(255,255,255,0.04)",
+              background: "rgba(159, 232, 112, 0.04)",
               bottom: "15%", left: "20%",
             }}
           />
         </div>
 
         {/* Content */}
-        <div className="relative z-10 flex flex-col items-center justify-center w-full px-12 text-white">
+        <div className="relative z-10 flex flex-col items-center justify-center w-full px-12">
           {/* AI Shield Icon */}
           <div
             className="pulse-glow mb-8"
             style={{
               width: 80, height: 80, borderRadius: 20,
-              background: "rgba(255,255,255,0.15)",
+              background: "rgba(159, 232, 112, 0.15)",
               backdropFilter: "blur(10px)",
               display: "flex", alignItems: "center", justifyContent: "center",
               fontSize: "2.5rem",
@@ -91,14 +91,17 @@ export default function LoginPage() {
             🛡️
           </div>
           <h2 style={{
-            fontSize: "2.5rem", fontWeight: 800,
+            fontSize: "2.5rem", fontWeight: 900,
             letterSpacing: "-0.03em", marginBottom: "0.75rem",
             textAlign: "center",
+            color: "var(--primary)",
           }}>
             {t("login.tagline")}
           </h2>
           <p style={{
-            fontSize: "1.125rem", opacity: 0.85,
+            fontSize: "1.125rem",
+            color: "var(--canvas-soft)",
+            opacity: 0.85,
             textAlign: "center", maxWidth: 360,
             lineHeight: 1.6,
           }}>
@@ -118,8 +121,8 @@ export default function LoginPage() {
               { val: "4+", label: "Models" },
             ].map((s) => (
               <div key={s.label} style={{ textAlign: "center" }}>
-                <p style={{ fontSize: "1.5rem", fontWeight: 800 }}>{s.val}</p>
-                <p style={{ fontSize: "0.75rem", opacity: 0.7, marginTop: 2 }}>{s.label}</p>
+                <p style={{ fontSize: "1.5rem", fontWeight: 900, color: "var(--canvas)" }}>{s.val}</p>
+                <p style={{ fontSize: "0.75rem", color: "var(--mute)", marginTop: 2 }}>{s.label}</p>
               </div>
             ))}
           </div>
@@ -128,16 +131,16 @@ export default function LoginPage() {
 
       {/* Right Panel — Login Form */}
       <div className="flex-1 flex items-center justify-center px-6 lg:px-12 py-12"
-           style={{ background: "var(--bg)" }}>
+           style={{ background: "var(--canvas-soft)" }}>
         <div className="w-full max-w-[400px] fade-up">
 
           {/* Mobile branding (shown only on small screens) */}
           <div className="lg:hidden text-center mb-8">
             <div style={{
               width: 48, height: 48, borderRadius: 14, margin: "0 auto 1rem",
-              background: "linear-gradient(135deg, var(--gradient-start), var(--gradient-end))",
+              background: "var(--primary)",
               display: "flex", alignItems: "center", justifyContent: "center",
-              color: "#fff", fontSize: "1.25rem", fontWeight: 800,
+              color: "var(--on-primary)", fontSize: "1.25rem", fontWeight: 800,
             }}>
               AI
             </div>
@@ -146,21 +149,21 @@ export default function LoginPage() {
           <div style={{ textAlign: "center", marginBottom: "2rem" }}>
             <h1 style={{
               fontSize: "1.875rem", fontWeight: 800,
-              letterSpacing: "-0.03em", color: "var(--text-1)",
+              letterSpacing: "-0.03em", color: "var(--ink)",
             }}>
               {t("login.title")}
             </h1>
-            <p style={{ color: "var(--text-3)", marginTop: "0.5rem", fontSize: "0.9375rem" }}>
+            <p style={{ color: "var(--body)", marginTop: "0.5rem", fontSize: "0.9375rem" }}>
               {t("login.subtitle")}
             </p>
           </div>
 
-          <div className="card" style={{ padding: "2rem", borderRadius: 20 }}>
+          <div className="card" style={{ padding: "2rem", borderRadius: "var(--r-xl)" }}>
             <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
               <div>
                 <label style={{
                   display: "block", fontSize: "0.8125rem",
-                  fontWeight: 600, color: "var(--text-2)", marginBottom: "0.5rem",
+                  fontWeight: 600, color: "var(--body)", marginBottom: "0.5rem",
                 }}>
                   {t("login.email")}
                 </label>
@@ -175,7 +178,7 @@ export default function LoginPage() {
               <div>
                 <label style={{
                   display: "block", fontSize: "0.8125rem",
-                  fontWeight: 600, color: "var(--text-2)", marginBottom: "0.5rem",
+                  fontWeight: 600, color: "var(--body)", marginBottom: "0.5rem",
                 }}>
                   {t("login.password")}
                 </label>
@@ -190,10 +193,10 @@ export default function LoginPage() {
 
               {error && (
                 <div style={{
-                  fontSize: "0.8125rem", color: "var(--danger)",
-                  background: "rgba(239, 68, 68, 0.08)",
-                  border: "1px solid rgba(239, 68, 68, 0.2)",
-                  borderRadius: 12, padding: "0.75rem 1rem",
+                  fontSize: "0.8125rem", color: "var(--negative)",
+                  background: "rgba(208, 50, 56, 0.08)",
+                  border: "1px solid rgba(208, 50, 56, 0.2)",
+                  borderRadius: "var(--r-md)", padding: "0.75rem 1rem",
                   display: "flex", alignItems: "center", gap: "0.5rem",
                 }}>
                   <span>⚠️</span> {error}
@@ -201,7 +204,7 @@ export default function LoginPage() {
               )}
 
               <button type="submit" disabled={isLoading} className="btn-primary"
-                style={{ padding: "0.85rem", fontSize: "0.9375rem", borderRadius: 12, marginTop: "0.25rem" }}>
+                style={{ padding: "0.85rem", fontSize: "0.9375rem", borderRadius: "var(--r-xl)", marginTop: "0.25rem" }}>
                 {isLoading ? <span className="spinner" /> : t("login.submit")}
               </button>
             </form>
@@ -211,18 +214,18 @@ export default function LoginPage() {
               display: "flex", alignItems: "center", gap: "1rem",
               margin: "1.5rem 0",
             }}>
-              <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
-              <span style={{ fontSize: "0.75rem", color: "var(--text-4)", fontWeight: 500 }}>or</span>
-              <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
+              <div style={{ flex: 1, height: 1, background: "var(--canvas-soft)" }} />
+              <span style={{ fontSize: "0.75rem", color: "var(--mute)", fontWeight: 500 }}>or</span>
+              <div style={{ flex: 1, height: 1, background: "var(--canvas-soft)" }} />
             </div>
 
             <p style={{
               textAlign: "center", fontSize: "0.875rem",
-              color: "var(--text-3)",
+              color: "var(--body)",
             }}>
               {t("login.noAccount")}{" "}
               <Link href="/signup" style={{
-                color: "var(--accent)", fontWeight: 700,
+                color: "var(--primary)", fontWeight: 700,
                 textDecoration: "none",
               }}>
                 {t("login.signupLink")}
