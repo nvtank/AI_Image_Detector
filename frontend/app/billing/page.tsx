@@ -51,6 +51,11 @@ function BillingContent() {
     };
   }, []);
 
+  // ── Refresh user on page mount ─────────────────────────────────────────
+  useEffect(() => {
+    refreshUser();
+  }, [refreshUser]);
+
   // ── Start payOS payment flow ───────────────────────────────────────────
   const handleBuy = async (plan: Plan) => {
     setErrorMsg(null);

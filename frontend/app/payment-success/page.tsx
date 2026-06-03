@@ -3,10 +3,16 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useAuth } from "@/context/AuthContext";
 
 export default function PaymentSuccessPage() {
   const router = useRouter();
+  const { refreshUser } = useAuth();
   const [countdown, setCountdown] = useState(5);
+
+  useEffect(() => {
+    refreshUser();
+  }, [refreshUser]);
 
   useEffect(() => {
     const interval = setInterval(() => {
