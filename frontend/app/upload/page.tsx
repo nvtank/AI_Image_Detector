@@ -2,10 +2,12 @@
 
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import AuthGuard from "@/components/AuthGuard";
 import { api } from "@/lib/api";
 import { useNotifications } from "@/context/NotificationContext";
 import { useLanguage } from "@/context/LanguageContext";
+import { useAuth } from "@/context/AuthContext";
 
 type LocalModelResult = {
   predicted_label: string;
@@ -56,6 +58,10 @@ const POLL_INTERVAL = 2000;
 
 function UploadContent() {
   const { t } = useLanguage();
+  const { user, refreshUser } = useAuth();
+  
+  const isFreeTier = user?.subscription_tier === "free";
+  const isProTier = user?.subscription_tier === "pro";
 
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -66,6 +72,23 @@ function UploadContent() {
   const [result, setResult] = useState<HybridPredictResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Force toggle switches to false if user plan is not authorized
+  useEffect(() => {
+    if (isFreeTier) {
+      setUseGemini(false);
+      setUseAsync(false);
+    } else if (!isProTier) {
+      setUseAsync(false);
+    }
+  }, [isFreeTier, isProTier]);
+
+  // Refresh user tokens when analysis completes
+  useEffect(() => {
+    if (result) {
+      refreshUser();
+    }
+  }, [result, refreshUser]);
 
   // Async polling state
   const [taskId, setTaskId] = useState<string | null>(null);
@@ -371,6 +394,17 @@ function UploadContent() {
                 style={{ fontWeight: 600, color: 'var(--ink)' }}
               >
                 ✨ {t('upload.geminiTitle')}
+                {isFreeTier && (
+                  <span
+                    className="text-[10px] px-1.5 py-0.5 rounded font-bold"
+                    style={{
+                      background: 'var(--canvas-soft)',
+                      color: 'var(--mute)',
+                    }}
+                  >
+                    🔒 Plus/Pro
+                  </span>
+                )}
               </span>
               <span className="text-xs leading-relaxed" style={{ color: 'var(--mute)' }}>
                 {t('upload.geminiDesc')}
@@ -379,11 +413,12 @@ function UploadContent() {
             <label className="toggle-switch">
               <input
                 type="checkbox"
-                checked={useGemini}
+                checked={isFreeTier ? false : useGemini}
+                disabled={isFreeTier}
                 onChange={() => setUseGemini(!useGemini)}
                 className="sr-only peer"
               />
-              <div className="toggle-track" />
+              <div className="toggle-track" style={{ opacity: isFreeTier ? 0.5 : 1, cursor: isFreeTier ? 'not-allowed' : 'pointer' }} />
             </label>
           </div>
 
@@ -391,7 +426,7 @@ function UploadContent() {
           {useGemini && (
             <div
               className="card-green p-4 flex items-center justify-between"
-              style={{ borderRadius: 'var(--r-xl)' }}
+              style={{ borderRadius: 'var(--r-xl)', opacity: !isProTier ? 0.8 : 1 }}
             >
               <div className="flex flex-col gap-0.5 pr-4">
                 <span
@@ -399,15 +434,27 @@ function UploadContent() {
                   style={{ fontWeight: 600, color: 'var(--ink-deep)' }}
                 >
                   ⚡ {t('upload.asyncTitle')}
-                  <span
-                    className="text-[10px] px-1.5 py-0.5 rounded font-bold"
-                    style={{
-                      background: 'var(--primary)',
-                      color: 'var(--on-primary)',
-                    }}
-                  >
-                    Phase 3
-                  </span>
+                  {!isProTier ? (
+                    <span
+                      className="text-[10px] px-1.5 py-0.5 rounded font-bold"
+                      style={{
+                        background: 'var(--canvas-soft)',
+                        color: 'var(--mute)',
+                      }}
+                    >
+                      🔒 Pro
+                    </span>
+                  ) : (
+                    <span
+                      className="text-[10px] px-1.5 py-0.5 rounded font-bold"
+                      style={{
+                        background: 'var(--primary)',
+                        color: 'var(--on-primary)',
+                      }}
+                    >
+                      Phase 3
+                    </span>
+                  )}
                 </span>
                 <span className="text-xs leading-relaxed" style={{ color: 'var(--body)' }}>
                   {t('upload.asyncDesc')}
@@ -416,12 +463,44 @@ function UploadContent() {
               <label className="toggle-switch">
                 <input
                   type="checkbox"
-                  checked={useAsync}
+                  checked={!isProTier ? false : useAsync}
+                  disabled={!isProTier}
                   onChange={() => setUseAsync(!useAsync)}
                   className="sr-only peer"
                 />
-                <div className="toggle-track" />
+                <div className="toggle-track" style={{ opacity: !isProTier ? 0.5 : 1, cursor: !isProTier ? 'not-allowed' : 'pointer' }} />
               </label>
+            </div>
+          )}
+
+          {/* Token Exhaustion Warning */}
+          {user && user.subscription_tier !== "pro" && (user.tokens ?? 0) <= 0 && (
+            <div
+              className="p-4 text-center"
+              style={{
+                background: 'var(--negative-pale)',
+                border: '1px solid var(--negative-soft)',
+                borderRadius: 'var(--r-xl)',
+                color: 'var(--negative)',
+              }}
+            >
+              <p className="text-sm font-semibold mb-3">
+                ⚠️ Bạn đã hết token phân tích ảnh.
+              </p>
+              <Link
+                href="/billing"
+                className="btn-primary"
+                style={{
+                  display: 'inline-block',
+                  padding: '8px 16px',
+                  borderRadius: 'var(--r-md)',
+                  fontSize: 13,
+                  fontWeight: 600,
+                  textDecoration: 'none',
+                }}
+              >
+                Nạp thêm token / Nâng cấp gói
+              </Link>
             </div>
           )}
 
@@ -429,7 +508,7 @@ function UploadContent() {
           <div className="flex gap-3">
             <button
               onClick={analyzeImage}
-              disabled={!file || isLoading}
+              disabled={!file || isLoading || !!(user && user.subscription_tier !== "pro" && (user.tokens ?? 0) <= 0)}
               className="btn-primary flex-1 flex justify-center items-center gap-2.5"
               style={{
                 borderRadius: 'var(--r-xl)',

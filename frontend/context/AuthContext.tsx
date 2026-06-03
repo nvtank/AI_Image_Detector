@@ -40,6 +40,8 @@ type User = {
   full_name: string;
   email: string;
   role: Role;
+  tokens?: number;
+  subscription_tier?: "free" | "plus" | "pro";
 };
 
 type AuthContextType = {
@@ -53,6 +55,7 @@ type AuthContextType = {
   loginWithGithub: (code: string) => Promise<void>;
   logout: () => Promise<void>;
   logoutAll: () => Promise<void>;
+  refreshUser: () => Promise<void>;
 };
 
 // ── Context ────────────────────────────────────────────────────────────────
@@ -216,6 +219,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     clearSession();
   }, [clearSession]);
 
+  const refreshUser = useCallback(async () => {
+    try {
+      const updatedUser = await api.getMe();
+      const mappedUser = { ...updatedUser, role: updatedUser.role ?? "user" };
+      setUser(mappedUser);
+      setCachedUser(mappedUser);
+    } catch (err) {
+      console.error("Failed to refresh user profile:", err);
+    }
+  }, []);
+
   // ── Derived state ─────────────────────────────────────────────────────
   const role = user?.role ?? null;
   const isAdmin = role === "admin";
@@ -233,6 +247,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         loginWithGithub,
         logout,
         logoutAll,
+        refreshUser,
       }}
     >
       {children}
