@@ -1,35 +1,40 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import "./globals.css";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import { AuthProvider } from "@/context/AuthContext";
 import { NotificationProvider } from "@/context/NotificationContext";
 import { LanguageProvider } from "@/context/LanguageContext";
-import Navbar from "@/components/Navbar";
-import "./globals.css";
 
 const inter = Inter({
-  subsets: ["latin"],
+  subsets: ["latin", "vietnamese"],
   variable: "--font-inter",
   display: "swap",
-  weight: ["300", "400", "500", "600", "700", "800"],
+  weight: ["400", "500", "600", "700", "800", "900"],
 });
 
 export const metadata: Metadata = {
-  title: "AI Image Detector",
-  description: "Detect AI-generated images with advanced deep learning models.",
+  title: "AI Image Detector — Detect AI-Generated Images",
+  description:
+    "Advanced AI-powered image detection system using Deep Learning (EfficientNetV2, ConvNeXt, ResNet50) and Gemini AI hybrid analysis. Detect AI-generated images with 98.6% F1 accuracy.",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="vi" className={`${inter.variable} h-full`}>
-      <body style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+    <html lang="vi">
+      <body
+        className={`${inter.variable}`}
+        style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}
+      >
         <LanguageProvider>
           <AuthProvider>
-            {/* NotificationProvider must be INSIDE AuthProvider (uses isAuthenticated) */}
             <NotificationProvider>
               <Navbar />
-              <main className="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                {children}
-              </main>
+              <main style={{ flex: 1 }}>{children}</main>
+              <Footer />
             </NotificationProvider>
           </AuthProvider>
         </LanguageProvider>

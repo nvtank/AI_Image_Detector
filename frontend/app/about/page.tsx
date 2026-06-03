@@ -6,23 +6,34 @@ export default function AboutPage() {
   const { t } = useLanguage();
 
   return (
-    <div className="max-w-3xl mx-auto pb-12">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">{t('about.title')}</h1>
-        <p className="text-slate-500 dark:text-slate-400">{t('about.subtitle')}</p>
+    <div style={{ maxWidth: 800, margin: '0 auto', paddingBottom: 'var(--sp-3xl)' }}>
+      {/* PAGE HEADER */}
+      <div style={{ marginBottom: 'var(--sp-2xl)' }}>
+        <h1 style={{ fontSize: 32, fontWeight: 600, letterSpacing: '-0.96px', color: 'var(--ink)', margin: 0, marginBottom: 'var(--sp-sm)' }}>
+          {t('about.title')}
+        </h1>
+        <p style={{ fontSize: 16, color: 'var(--body)', margin: 0 }}>
+          {t('about.subtitle')}
+        </p>
       </div>
 
-      <div className="space-y-6">
-        <section className="bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800">
-          <h2 className="text-xl font-bold mb-3 text-slate-800 dark:text-slate-100">{t('about.overviewTitle')}</h2>
-          <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-xl)' }}>
+        {/* OVERVIEW SECTION */}
+        <section className="card" style={{ padding: 'var(--sp-2xl)', borderRadius: 'var(--r-xl)' }}>
+          <h2 style={{ fontSize: 20, fontWeight: 700, color: 'var(--ink)', margin: 0, marginBottom: 'var(--sp-md)' }}>
+            {t('about.overviewTitle')}
+          </h2>
+          <p style={{ fontSize: 16, color: 'var(--body)', lineHeight: 1.65, margin: 0 }}>
             {t('about.overviewBody')}
           </p>
         </section>
 
-        <section className="bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800">
-          <h2 className="text-xl font-bold mb-4 text-slate-800 dark:text-slate-100">{t('about.howTitle')}</h2>
-          <div className="space-y-4">
+        {/* HOW IT WORKS SECTION */}
+        <section className="card" style={{ padding: 'var(--sp-2xl)', borderRadius: 'var(--r-xl)' }}>
+          <h2 style={{ fontSize: 20, fontWeight: 700, color: 'var(--ink)', margin: 0, marginBottom: 'var(--sp-lg)' }}>
+            {t('about.howTitle')}
+          </h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-lg)' }}>
             {[
               { step: "1", title: t('about.step1Title'), desc: t('about.step1Desc') },
               { step: "2", title: t('about.step2Title'), desc: t('about.step2Desc') },
@@ -30,22 +41,30 @@ export default function AboutPage() {
               { step: "4", title: t('about.step4Title'), desc: t('about.step4Desc') },
               { step: "5", title: t('about.step5Title'), desc: t('about.step5Desc') },
             ].map(({ step, title, desc }) => (
-              <div key={step} className="flex gap-4">
-                <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 flex items-center justify-center text-sm font-bold flex-shrink-0 mt-0.5">
+              <div key={step} style={{ display: 'flex', gap: 'var(--sp-lg)' }}>
+                <div style={{
+                  width: 32, height: 32, borderRadius: '50%',
+                  background: 'var(--primary-pale)', color: 'var(--ink-deep)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 14, fontWeight: 700, flexShrink: 0, marginTop: 2,
+                }}>
                   {step}
                 </div>
                 <div>
-                  <h3 className="font-semibold text-slate-800 dark:text-slate-200">{title}</h3>
-                  <p className="text-slate-500 dark:text-slate-400 text-sm mt-1 leading-relaxed">{desc}</p>
+                  <h3 style={{ fontWeight: 600, color: 'var(--ink)', margin: 0 }}>{title}</h3>
+                  <p style={{ fontSize: 14, color: 'var(--body)', lineHeight: 1.65, margin: 0, marginTop: 'var(--sp-xs)' }}>{desc}</p>
                 </div>
               </div>
             ))}
           </div>
         </section>
 
-        <section className="bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800">
-          <h2 className="text-xl font-bold mb-4 text-slate-800 dark:text-slate-100">{t('about.techTitle')}</h2>
-          <div className="grid grid-cols-2 gap-4 text-sm">
+        {/* TECH STACK SECTION */}
+        <section className="card" style={{ padding: 'var(--sp-2xl)', borderRadius: 'var(--r-xl)' }}>
+          <h2 style={{ fontSize: 20, fontWeight: 700, color: 'var(--ink)', margin: 0, marginBottom: 'var(--sp-lg)' }}>
+            {t('about.techTitle')}
+          </h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 'var(--sp-lg)' }}>
             {[
               { category: t('about.catAI'), tech: t('about.techAI') },
               { category: t('about.catBackend'), tech: t('about.techBackend') },
@@ -54,9 +73,11 @@ export default function AboutPage() {
               { category: t('about.catDevOps'), tech: t('about.techDevOps') },
               { category: t('about.catExplainability'), tech: t('about.techExplainability') },
             ].map(({ category, tech }) => (
-              <div key={category} className="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
-                <p className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">{category}</p>
-                <p className="font-medium text-slate-700 dark:text-slate-200">{tech}</p>
+              <div key={category} className="card-inner" style={{ padding: 'var(--sp-lg)', borderRadius: 'var(--r-lg)' }}>
+                <p style={{ fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--mute)', margin: 0, marginBottom: 'var(--sp-xs)' }}>
+                  {category}
+                </p>
+                <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink)', margin: 0 }}>{tech}</p>
               </div>
             ))}
           </div>

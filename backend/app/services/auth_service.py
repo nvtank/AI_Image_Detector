@@ -52,10 +52,12 @@ def verify_password(plain_password: str, password_hash: str) -> bool:
 
 def resolve_role(email: str) -> Role:
     """
-    Determine a user's role based on the ADMIN_EMAILS config.
-    Admins are configured via environment variable, not stored in DB,
-    to prevent privilege escalation through DB tampering.
+    Determine a user's role. Checks database first, then falls back to the ADMIN_EMAILS config.
     """
+    user = get_user_by_email(email)
+    if user and user.get("role"):
+        return user["role"]
+
     admin_emails = [e.strip().lower() for e in settings.ADMIN_EMAILS.split(",") if e.strip()]
     if email.lower() in admin_emails:
         return "admin"
@@ -223,7 +225,7 @@ def get_user_by_id(user_id: int) -> Optional[dict]:
         return dict(row) if row else None
 
 
-def create_user(full_name: str, email: str, password: str) -> dict:
+def create_user(full_name: str, email: str, password: str, role: str = "user") -> dict:
     if len(password) < 8:
         raise ValueError("Mật khẩu phải có ít nhất 8 ký tự")
     if not any(c.isdigit() for c in password):
@@ -239,14 +241,14 @@ def create_user(full_name: str, email: str, password: str) -> dict:
     with _get_connection() as conn:
         cursor = conn.cursor()
         cursor.execute(
-            "INSERT INTO users (full_name, email, password_hash, created_at, updated_at) VALUES (?, ?, ?, ?, ?)",
-            (full_name, email, password_hash, now, now),
+            "INSERT INTO users (full_name, email, password_hash, role, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
+            (full_name, email, password_hash, role, now, now),
         )
         conn.commit()
         user_id = cursor.lastrowid
 
-    role = resolve_role(email)
-    return {"id": user_id, "full_name": full_name, "email": email, "role": role}
+    resolved_role = resolve_role(email)
+    return {"id": user_id, "full_name": full_name, "email": email, "role": resolved_role}
 
 
 def authenticate_user(email: str, password: str) -> Optional[dict]:

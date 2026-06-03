@@ -15,7 +15,8 @@ This is the FastAPI backend for the AI Image Detector project. It will provide e
 
 1. **Create and activate a virtual environment:**
    ```bash
-   python -m venv venv
+  # Recommended: Python 3.10 (matches Dockerfile/shell.nix). Python 3.13 may fail building pydantic-core.
+  python3.10 -m venv venv
    source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
 
@@ -34,6 +35,28 @@ This is the FastAPI backend for the AI Image Detector project. It will provide e
    ```bash
    uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
    ```
+
+## Create Admin Account
+
+Admin role is controlled by environment variable `ADMIN_EMAILS` (comma-separated). The user is still stored in SQLite, but whether they are `admin` is determined by their email being present in `ADMIN_EMAILS`.
+
+From the repo root:
+
+```bash
+python backend/scripts/create_admin.py --email admin@example.com --update-env
+```
+
+If you want to choose a password explicitly:
+
+```bash
+python backend/scripts/create_admin.py --email admin@example.com --password "YourPassw0rd" --update-env
+```
+
+If the user already exists and you want to reset their password:
+
+```bash
+python backend/scripts/create_admin.py --email admin@example.com --password "NewPassw0rd" --reset-password
+```
 
 ## Endpoints
 

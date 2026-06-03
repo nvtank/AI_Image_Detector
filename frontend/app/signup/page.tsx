@@ -28,9 +28,14 @@ export default function SignupPage() {
     return Math.min(score, 5);
   })();
 
-  const strengthColor = ["#ef4444", "#f97316", "#eab308", "#22c55e", "#10b981"][
-    Math.max(0, passwordStrength - 1)
-  ] || "#e5e7eb";
+  const strengthColors = [
+    "var(--negative)",
+    "var(--accent-orange)",
+    "var(--warning)",
+    "var(--positive)",
+    "var(--positive-deep)",
+  ];
+  const strengthColor = strengthColors[Math.max(0, passwordStrength - 1)] || "var(--canvas-soft)";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,16 +57,16 @@ export default function SignupPage() {
     <div className="flex min-h-[85vh] -mt-8 -mx-4 sm:-mx-6 lg:-mx-8">
       {/* Left Panel — Signup Form */}
       <div className="flex-1 flex items-center justify-center px-6 lg:px-12 py-12"
-           style={{ background: "var(--bg)" }}>
+           style={{ background: "var(--canvas-soft)" }}>
         <div className="w-full max-w-[420px] fade-up">
 
           {/* Mobile branding */}
           <div className="lg:hidden text-center mb-8">
             <div style={{
               width: 48, height: 48, borderRadius: 14, margin: "0 auto 1rem",
-              background: "linear-gradient(135deg, var(--gradient-start), var(--gradient-end))",
+              background: "var(--primary)",
               display: "flex", alignItems: "center", justifyContent: "center",
-              color: "#fff", fontSize: "1.25rem", fontWeight: 800,
+              color: "var(--on-primary)", fontSize: "1.25rem", fontWeight: 800,
             }}>
               AI
             </div>
@@ -70,21 +75,21 @@ export default function SignupPage() {
           <div style={{ textAlign: "center", marginBottom: "2rem" }}>
             <h1 style={{
               fontSize: "1.875rem", fontWeight: 800,
-              letterSpacing: "-0.03em", color: "var(--text-1)",
+              letterSpacing: "-0.03em", color: "var(--ink)",
             }}>
               {t("signup.title")}
             </h1>
-            <p style={{ color: "var(--text-3)", marginTop: "0.5rem", fontSize: "0.9375rem" }}>
+            <p style={{ color: "var(--body)", marginTop: "0.5rem", fontSize: "0.9375rem" }}>
               {t("signup.subtitle")}
             </p>
           </div>
 
-          <div className="card" style={{ padding: "2rem", borderRadius: 20 }}>
+          <div className="card" style={{ padding: "2rem", borderRadius: "var(--r-xl)" }}>
             <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1.1rem" }}>
               <div>
                 <label style={{
                   display: "block", fontSize: "0.8125rem",
-                  fontWeight: 600, color: "var(--text-2)", marginBottom: "0.5rem",
+                  fontWeight: 600, color: "var(--body)", marginBottom: "0.5rem",
                 }}>
                   {t("signup.fullName")}
                 </label>
@@ -94,7 +99,7 @@ export default function SignupPage() {
               <div>
                 <label style={{
                   display: "block", fontSize: "0.8125rem",
-                  fontWeight: 600, color: "var(--text-2)", marginBottom: "0.5rem",
+                  fontWeight: 600, color: "var(--body)", marginBottom: "0.5rem",
                 }}>
                   {t("signup.email")}
                 </label>
@@ -104,7 +109,7 @@ export default function SignupPage() {
               <div>
                 <label style={{
                   display: "block", fontSize: "0.8125rem",
-                  fontWeight: 600, color: "var(--text-2)", marginBottom: "0.5rem",
+                  fontWeight: 600, color: "var(--body)", marginBottom: "0.5rem",
                 }}>
                   {t("signup.password")}
                 </label>
@@ -117,8 +122,8 @@ export default function SignupPage() {
                       <div
                         key={i}
                         style={{
-                          flex: 1, height: 4, borderRadius: 99,
-                          background: i <= passwordStrength ? strengthColor : "var(--border)",
+                          flex: 1, height: 4, borderRadius: "var(--r-pill)",
+                          background: i <= passwordStrength ? strengthColor : "var(--canvas-soft)",
                           transition: "all 0.3s ease",
                         }}
                       />
@@ -129,7 +134,7 @@ export default function SignupPage() {
               <div>
                 <label style={{
                   display: "block", fontSize: "0.8125rem",
-                  fontWeight: 600, color: "var(--text-2)", marginBottom: "0.5rem",
+                  fontWeight: 600, color: "var(--body)", marginBottom: "0.5rem",
                 }}>
                   {t("signup.confirmPassword")}
                 </label>
@@ -139,10 +144,10 @@ export default function SignupPage() {
 
               {error && (
                 <div style={{
-                  fontSize: "0.8125rem", color: "var(--danger)",
-                  background: "rgba(239, 68, 68, 0.08)",
-                  border: "1px solid rgba(239, 68, 68, 0.2)",
-                  borderRadius: 12, padding: "0.75rem 1rem",
+                  fontSize: "0.8125rem", color: "var(--negative)",
+                  background: "rgba(208, 50, 56, 0.08)",
+                  border: "1px solid rgba(208, 50, 56, 0.2)",
+                  borderRadius: "var(--r-md)", padding: "0.75rem 1rem",
                   display: "flex", alignItems: "center", gap: "0.5rem",
                 }}>
                   <span>⚠️</span> {error}
@@ -150,21 +155,21 @@ export default function SignupPage() {
               )}
 
               <button type="submit" disabled={isLoading} className="btn-primary"
-                style={{ padding: "0.85rem", fontSize: "0.9375rem", borderRadius: 12, marginTop: "0.25rem" }}>
+                style={{ padding: "0.85rem", fontSize: "0.9375rem", borderRadius: "var(--r-xl)", marginTop: "0.25rem" }}>
                 {isLoading ? <span className="spinner" /> : t("signup.submit")}
               </button>
             </form>
 
             {/* Divider */}
             <div style={{ display: "flex", alignItems: "center", gap: "1rem", margin: "1.5rem 0" }}>
-              <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
-              <span style={{ fontSize: "0.75rem", color: "var(--text-4)", fontWeight: 500 }}>or</span>
-              <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
+              <div style={{ flex: 1, height: 1, background: "var(--canvas-soft)" }} />
+              <span style={{ fontSize: "0.75rem", color: "var(--mute)", fontWeight: 500 }}>or</span>
+              <div style={{ flex: 1, height: 1, background: "var(--canvas-soft)" }} />
             </div>
 
-            <p style={{ textAlign: "center", fontSize: "0.875rem", color: "var(--text-3)" }}>
+            <p style={{ textAlign: "center", fontSize: "0.875rem", color: "var(--body)" }}>
               {t("signup.hasAccount")}{" "}
-              <Link href="/login" style={{ color: "var(--accent)", fontWeight: 700 }}>
+              <Link href="/login" style={{ color: "var(--primary)", fontWeight: 700, textDecoration: "none" }}>
                 {t("signup.loginLink")}
               </Link>
             </p>
@@ -172,11 +177,11 @@ export default function SignupPage() {
         </div>
       </div>
 
-      {/* Right Panel — Gradient Branding */}
+      {/* Right Panel — Ink Branding */}
       <div
         className="hidden lg:flex lg:w-[50%] relative overflow-hidden"
         style={{
-          background: "linear-gradient(135deg, #8b5cf6, #6366f1, #4f46e5)",
+          background: "var(--ink)",
         }}
       >
         {/* Decorative shapes */}
@@ -185,7 +190,7 @@ export default function SignupPage() {
             className="float-anim absolute"
             style={{
               width: 280, height: 280, borderRadius: "50%",
-              background: "rgba(255,255,255,0.07)",
+              background: "rgba(159, 232, 112, 0.08)",
               bottom: "5%", right: "-8%",
             }}
           />
@@ -193,7 +198,7 @@ export default function SignupPage() {
             className="float-anim-delay absolute"
             style={{
               width: 180, height: 180, borderRadius: "50%",
-              background: "rgba(255,255,255,0.05)",
+              background: "rgba(159, 232, 112, 0.06)",
               top: "15%", left: "10%",
             }}
           />
@@ -201,7 +206,7 @@ export default function SignupPage() {
             className="float-anim-slow absolute"
             style={{
               width: 120, height: 120, borderRadius: "30%",
-              background: "rgba(255,255,255,0.04)",
+              background: "rgba(159, 232, 112, 0.05)",
               top: "50%", right: "25%",
               transform: "rotate(45deg)",
             }}
@@ -209,12 +214,12 @@ export default function SignupPage() {
         </div>
 
         {/* Content */}
-        <div className="relative z-10 flex flex-col items-center justify-center w-full px-12 text-white">
+        <div className="relative z-10 flex flex-col items-center justify-center w-full px-12">
           <div
             className="pulse-glow mb-8"
             style={{
               width: 80, height: 80, borderRadius: 20,
-              background: "rgba(255,255,255,0.15)",
+              background: "rgba(159, 232, 112, 0.15)",
               backdropFilter: "blur(10px)",
               display: "flex", alignItems: "center", justifyContent: "center",
               fontSize: "2.5rem",
@@ -223,14 +228,17 @@ export default function SignupPage() {
             🚀
           </div>
           <h2 style={{
-            fontSize: "2.5rem", fontWeight: 800,
+            fontSize: "2.5rem", fontWeight: 900,
             letterSpacing: "-0.03em", marginBottom: "0.75rem",
             textAlign: "center",
+            color: "var(--primary)",
           }}>
             {t("signup.tagline")}
           </h2>
           <p style={{
-            fontSize: "1.125rem", opacity: 0.85,
+            fontSize: "1.125rem",
+            color: "var(--canvas-soft)",
+            opacity: 0.85,
             textAlign: "center", maxWidth: 340,
             lineHeight: 1.6,
           }}>
@@ -246,12 +254,12 @@ export default function SignupPage() {
             ].map((item) => (
               <div key={item.text} style={{
                 display: "flex", alignItems: "center", gap: "0.75rem",
-                background: "rgba(255,255,255,0.1)",
+                background: "rgba(159, 232, 112, 0.1)",
                 backdropFilter: "blur(8px)",
-                borderRadius: 12, padding: "0.75rem 1.25rem",
+                borderRadius: "var(--r-md)", padding: "0.75rem 1.25rem",
               }}>
                 <span style={{ fontSize: "1.25rem" }}>{item.icon}</span>
-                <span style={{ fontSize: "0.9375rem", fontWeight: 500 }}>{item.text}</span>
+                <span style={{ fontSize: "0.9375rem", fontWeight: 500, color: "var(--canvas)" }}>{item.text}</span>
               </div>
             ))}
           </div>
