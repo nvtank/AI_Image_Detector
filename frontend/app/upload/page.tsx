@@ -58,10 +58,10 @@ const POLL_INTERVAL = 2000;
 
 function UploadContent() {
   const { t } = useLanguage();
-  const { user, refreshUser } = useAuth();
+  const { user, refreshUser, isAdmin } = useAuth();
   
-  const isFreeTier = user?.subscription_tier === "free";
-  const isProTier = user?.subscription_tier === "pro";
+  const isFreeTier = user?.subscription_tier === "free" && !isAdmin;
+  const isProTier = user?.subscription_tier === "pro" || isAdmin;
 
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -474,7 +474,7 @@ function UploadContent() {
           )}
 
           {/* Token Exhaustion Warning */}
-          {user && user.subscription_tier !== "pro" && (user.tokens ?? 0) <= 0 && (
+          {user && !isProTier && (user.tokens ?? 0) <= 0 && (
             <div
               className="p-4 text-center"
               style={{
@@ -508,7 +508,7 @@ function UploadContent() {
           <div className="flex gap-3">
             <button
               onClick={analyzeImage}
-              disabled={!file || isLoading || !!(user && user.subscription_tier !== "pro" && (user.tokens ?? 0) <= 0)}
+              disabled={!file || isLoading || !!(user && !isProTier && (user.tokens ?? 0) <= 0)}
               className="btn-primary flex-1 flex justify-center items-center gap-2.5"
               style={{
                 borderRadius: 'var(--r-xl)',
