@@ -7,6 +7,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import AuthGuard from "@/components/AuthGuard";
 
 type ModelMetrics = {
   model_name: string;
@@ -33,6 +34,14 @@ function Skeleton({ h = 20, r = 8 }: { h?: number; r?: number }) {
 }
 
 export default function DashboardPage() {
+  return (
+    <AuthGuard requireRole="admin">
+      <DashboardContent />
+    </AuthGuard>
+  );
+}
+
+function DashboardContent() {
   const { t } = useLanguage();
   const [metricsData, setMetricsData] = useState<ModelMetrics[]>([]);
   const [modelsInfo, setModelsInfo] = useState<ModelsInfo | null>(null);

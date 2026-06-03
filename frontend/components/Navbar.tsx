@@ -7,13 +7,11 @@ import { useLanguage } from "@/context/LanguageContext";
 import NotificationBell from "@/components/NotificationBell";
 
 const publicLinks = [
-  { href: "/dashboard", key: "dashboard" },
   { href: "/about", key: "about" },
 ];
 const userLinks = [
   { href: "/upload", key: "upload" },
   { href: "/history", key: "history" },
-  { href: "/dashboard", key: "dashboard" },
   { href: "/about", key: "about" },
 ];
 const adminLinks = [

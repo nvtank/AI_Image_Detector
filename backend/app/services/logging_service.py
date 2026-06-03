@@ -79,6 +79,22 @@ class LoggingService:
                 CREATE INDEX IF NOT EXISTS idx_refresh_token_hash
                 ON refresh_tokens(token_hash)
             ''')
+
+            # Password resets table
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS password_resets (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    email TEXT NOT NULL,
+                    token TEXT NOT NULL UNIQUE,
+                    expires_at TIMESTAMP NOT NULL,
+                    used INTEGER DEFAULT 0,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+            cursor.execute('''
+                CREATE INDEX IF NOT EXISTS idx_password_reset_token
+                ON password_resets(token)
+            ''')
             conn.commit()
 
     def _migrate_db(self):

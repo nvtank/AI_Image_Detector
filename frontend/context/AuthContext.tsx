@@ -50,6 +50,7 @@ type AuthContextType = {
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   signup: (fullName: string, email: string, password: string) => Promise<void>;
+  loginWithGithub: (code: string) => Promise<void>;
   logout: () => Promise<void>;
   logoutAll: () => Promise<void>;
 };
@@ -182,6 +183,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [persistSession, startRefreshTimer]
   );
 
+  const loginWithGithub = useCallback(
+    async (code: string) => {
+      const data = await api.loginWithGithub(code);
+      persistSession(
+        { ...data.user, role: data.user.role ?? "user" },
+        data.access_token,
+        data.refresh_token,
+        data.expires_in ?? 900
+      );
+      startRefreshTimer();
+    },
+    [persistSession, startRefreshTimer]
+  );
+
   const logout = useCallback(async () => {
     const rt = getRefreshToken();
     try {
@@ -215,6 +230,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         loading,
         login,
         signup,
+        loginWithGithub,
         logout,
         logoutAll,
       }}

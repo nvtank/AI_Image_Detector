@@ -34,6 +34,17 @@ class Settings(BaseSettings):
     # RBAC - Admin users (comma-separated email list)
     ADMIN_EMAILS: str = ""
 
+    # GitHub OAuth
+    GITHUB_CLIENT_ID: str = ""
+    GITHUB_CLIENT_SECRET: str = ""
+
+    # SMTP Config (Forgot Password)
+    SMTP_HOST: str = ""
+    SMTP_PORT: int = 587
+    SMTP_USER: str = ""
+    SMTP_PASSWORD: str = ""
+    SMTP_FROM: str = "noreply@ai-image-detector.com"
+
     # Cloudinary
     CLOUDINARY_CLOUD_NAME: str = ""
     CLOUDINARY_API_KEY: str = ""

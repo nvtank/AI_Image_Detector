@@ -158,3 +158,18 @@ class MetricsResponse(BaseModel):
     model_comparison: list[dict]
     robustness_results: list[dict]
     training_history_summary: list[dict]
+
+# ---- GitHub OAuth & Password Reset ----
+class GithubLoginRequest(BaseModel):
+    code: str
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str
+
+class ConfigResponse(BaseModel):
+    github_client_id: str
+    github_enabled: bool

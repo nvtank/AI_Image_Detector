@@ -383,7 +383,7 @@ function UploadContent() {
                 onChange={() => setUseGemini(!useGemini)}
                 className="sr-only peer"
               />
-              <div className="toggle-track peer-checked:after:translate-x-full peer-checked:bg-[var(--primary)]" />
+              <div className="toggle-track" />
             </label>
           </div>
 
@@ -420,7 +420,7 @@ function UploadContent() {
                   onChange={() => setUseAsync(!useAsync)}
                   className="sr-only peer"
                 />
-                <div className="toggle-track peer-checked:after:translate-x-full peer-checked:bg-[var(--primary)]" />
+                <div className="toggle-track" />
               </label>
             </div>
           )}
