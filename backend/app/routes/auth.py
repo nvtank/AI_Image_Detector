@@ -21,7 +21,8 @@ from fastapi import APIRouter, HTTPException, status, Depends, Request
 from app.config import settings
 from app.schemas import (
     UserCreate, UserLogin, AuthResponse, UserResponse, RefreshTokenRequest,
-    GithubLoginRequest, ForgotPasswordRequest, ResetPasswordRequest, ConfigResponse
+    GithubLoginRequest, ForgotPasswordRequest, ResetPasswordRequest, ConfigResponse,
+    UpgradeSubscriptionRequest, BuyTokensRequest
 )
 from app.services import auth_service
 from app.core.auth import get_current_user
@@ -181,6 +182,41 @@ async def logout_all(current_user: dict = Depends(get_current_user)):
 async def get_me(current_user: dict = Depends(get_current_user)):
     """Return currently authenticated user profile including RBAC role."""
     return UserResponse(**current_user)
+
+
+@router.post("/upgrade", response_model=UserResponse)
+async def upgrade_subscription(
+    body: UpgradeSubscriptionRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """Upgrade current user's subscription tier (mock transaction)."""
+    updated_user = auth_service.upgrade_user_subscription(current_user["id"], body.tier)
+    if not updated_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Người dùng không tồn tại."
+        )
+    return UserResponse(**updated_user)
+
+
+@router.post("/buy-tokens", response_model=UserResponse)
+async def buy_tokens(
+    body: BuyTokensRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """Refill user's tokens by amount (mock transaction)."""
+    if body.amount <= 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Số lượng token nạp phải lớn hơn 0."
+        )
+    updated_user = auth_service.add_user_tokens(current_user["id"], body.amount)
+    if not updated_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Người dùng không tồn tại."
+        )
+    return UserResponse(**updated_user)
 
 
 @router.get("/config", response_model=ConfigResponse)

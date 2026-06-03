@@ -22,6 +22,14 @@ class UserResponse(BaseModel):
     full_name: str
     email: str
     role: Literal["user", "admin"] = "user"
+    tokens: Optional[int] = 5
+    subscription_tier: Optional[str] = "free"
+
+class UpgradeSubscriptionRequest(BaseModel):
+    tier: Literal["free", "plus", "pro"]
+
+class BuyTokensRequest(BaseModel):
+    amount: int
 
 class AuthResponse(BaseModel):
     """

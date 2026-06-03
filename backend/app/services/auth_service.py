@@ -248,7 +248,14 @@ def create_user(full_name: str, email: str, password: str, role: str = "user") -
         user_id = cursor.lastrowid
 
     resolved_role = resolve_role(email)
-    return {"id": user_id, "full_name": full_name, "email": email, "role": resolved_role}
+    return {
+        "id": user_id,
+        "full_name": full_name,
+        "email": email,
+        "role": resolved_role,
+        "tokens": 5,
+        "subscription_tier": "free"
+    }
 
 
 def authenticate_user(email: str, password: str) -> Optional[dict]:
@@ -263,4 +270,74 @@ def authenticate_user(email: str, password: str) -> Optional[dict]:
         "full_name": user["full_name"],
         "email": user["email"],
         "role": role,
+        "tokens": user.get("tokens", 5),
+        "subscription_tier": user.get("subscription_tier", "free")
     }
+
+
+def deduct_user_token(user_id: int) -> bool:
+    """
+    Deduct 1 token from user balance. Pro users are unlimited and never deducted.
+    Returns True if token successfully deducted, False otherwise.
+    """
+    with _get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT tokens, subscription_tier FROM users WHERE id = ?", (user_id,))
+        row = cursor.fetchone()
+        if not row:
+            return False
+        
+        tier = row["subscription_tier"] or "free"
+        tokens = row["tokens"] if row["tokens"] is not None else 5
+        
+        if tier == "pro":
+            return True  # Unlimited, no deduction
+            
+        if tokens <= 0:
+            return False  # Out of tokens
+            
+        cursor.execute("UPDATE users SET tokens = tokens - 1 WHERE id = ?", (user_id,))
+        conn.commit()
+        return True
+
+
+def upgrade_user_subscription(user_id: int, tier: str) -> Optional[dict]:
+    """
+    Upgrade subscription tier in DB and reset tokens accordingly.
+    """
+    new_tokens = 5
+    if tier == "plus":
+        new_tokens = 100
+    elif tier == "pro":
+        new_tokens = 9999
+        
+    with _get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            "UPDATE users SET subscription_tier = ?, tokens = ?, updated_at = datetime('now') WHERE id = ?",
+            (tier, new_tokens, user_id)
+        )
+        conn.commit()
+        
+    user = get_user_by_id(user_id)
+    if user:
+        user["role"] = resolve_role(user["email"])
+    return user
+
+
+def add_user_tokens(user_id: int, amount: int) -> Optional[dict]:
+    """
+    Refill/add tokens to the user's balance.
+    """
+    with _get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            "UPDATE users SET tokens = COALESCE(tokens, 0) + ?, updated_at = datetime('now') WHERE id = ?",
+            (amount, user_id)
+        )
+        conn.commit()
+        
+    user = get_user_by_id(user_id)
+    if user:
+        user["role"] = resolve_role(user["email"])
+    return user

@@ -33,6 +33,8 @@ class LoggingService:
                     email TEXT UNIQUE NOT NULL,
                     password_hash TEXT NOT NULL,
                     role TEXT DEFAULT 'user',
+                    tokens INTEGER DEFAULT 5,
+                    subscription_tier TEXT DEFAULT 'free',
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
@@ -102,6 +104,8 @@ class LoggingService:
         new_columns = {
             "users": [
                 ("role", "TEXT DEFAULT 'user'"),
+                ("tokens", "INTEGER DEFAULT 5"),
+                ("subscription_tier", "TEXT DEFAULT 'free'"),
             ],
             "prediction_logs": [
                 ("user_id", "INTEGER"),
