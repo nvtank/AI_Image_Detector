@@ -245,7 +245,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => {
-                    const redirectUri = encodeURIComponent(`${window.location.origin}/auth/callback/github`);
+                    const redirectUri = encodeURIComponent(`${window.location.origin}/auth/callback/github/`);
                     window.location.href = `https://github.com/login/oauth/authorize?client_id=${githubConfig.clientId}&redirect_uri=${redirectUri}&scope=user:email`;
                   }}
                   className="btn-secondary"
