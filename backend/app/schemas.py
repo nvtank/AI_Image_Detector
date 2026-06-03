@@ -22,6 +22,14 @@ class UserResponse(BaseModel):
     full_name: str
     email: str
     role: Literal["user", "admin"] = "user"
+    tokens: Optional[int] = 5
+    subscription_tier: Optional[str] = "free"
+
+class UpgradeSubscriptionRequest(BaseModel):
+    tier: Literal["free", "plus", "pro"]
+
+class BuyTokensRequest(BaseModel):
+    amount: int
 
 class AuthResponse(BaseModel):
     """
@@ -158,3 +166,18 @@ class MetricsResponse(BaseModel):
     model_comparison: list[dict]
     robustness_results: list[dict]
     training_history_summary: list[dict]
+
+# ---- GitHub OAuth & Password Reset ----
+class GithubLoginRequest(BaseModel):
+    code: str
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str
+
+class ConfigResponse(BaseModel):
+    github_client_id: str
+    github_enabled: bool

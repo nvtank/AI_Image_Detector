@@ -33,6 +33,8 @@ class LoggingService:
                     email TEXT UNIQUE NOT NULL,
                     password_hash TEXT NOT NULL,
                     role TEXT DEFAULT 'user',
+                    tokens INTEGER DEFAULT 5,
+                    subscription_tier TEXT DEFAULT 'free',
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
@@ -79,6 +81,42 @@ class LoggingService:
                 CREATE INDEX IF NOT EXISTS idx_refresh_token_hash
                 ON refresh_tokens(token_hash)
             ''')
+
+            # Password resets table
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS password_resets (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    email TEXT NOT NULL,
+                    token TEXT NOT NULL UNIQUE,
+                    expires_at TIMESTAMP NOT NULL,
+                    used INTEGER DEFAULT 0,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+            cursor.execute('''
+                CREATE INDEX IF NOT EXISTS idx_password_reset_token
+                ON password_resets(token)
+            ''')
+
+            # payOS payment orders table
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS payment_orders (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER NOT NULL,
+                    order_code INTEGER UNIQUE NOT NULL,
+                    plan TEXT NOT NULL,
+                    amount INTEGER NOT NULL,
+                    status TEXT DEFAULT 'pending',
+                    checkout_url TEXT,
+                    created_at TEXT,
+                    paid_at TEXT,
+                    FOREIGN KEY (user_id) REFERENCES users(id)
+                )
+            ''')
+            cursor.execute('''
+                CREATE INDEX IF NOT EXISTS idx_payment_order_code
+                ON payment_orders(order_code)
+            ''')
             conn.commit()
 
     def _migrate_db(self):
@@ -86,6 +124,9 @@ class LoggingService:
         new_columns = {
             "users": [
                 ("role", "TEXT DEFAULT 'user'"),
+                ("tokens", "INTEGER DEFAULT 5"),
+                ("subscription_tier", "TEXT DEFAULT 'free'"),
+                ("subscription_expires_at", "TEXT"),
             ],
             "prediction_logs": [
                 ("user_id", "INTEGER"),

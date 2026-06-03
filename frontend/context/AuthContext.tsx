@@ -40,6 +40,8 @@ type User = {
   full_name: string;
   email: string;
   role: Role;
+  tokens?: number;
+  subscription_tier?: "free" | "plus" | "pro";
 };
 
 type AuthContextType = {
@@ -50,8 +52,10 @@ type AuthContextType = {
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   signup: (fullName: string, email: string, password: string) => Promise<void>;
+  loginWithGithub: (code: string) => Promise<void>;
   logout: () => Promise<void>;
   logoutAll: () => Promise<void>;
+  refreshUser: () => Promise<void>;
 };
 
 // ── Context ────────────────────────────────────────────────────────────────
@@ -182,6 +186,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [persistSession, startRefreshTimer]
   );
 
+  const loginWithGithub = useCallback(
+    async (code: string) => {
+      const data = await api.loginWithGithub(code);
+      persistSession(
+        { ...data.user, role: data.user.role ?? "user" },
+        data.access_token,
+        data.refresh_token,
+        data.expires_in ?? 900
+      );
+      startRefreshTimer();
+    },
+    [persistSession, startRefreshTimer]
+  );
+
   const logout = useCallback(async () => {
     const rt = getRefreshToken();
     try {
@@ -201,6 +219,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     clearSession();
   }, [clearSession]);
 
+  const refreshUser = useCallback(async () => {
+    try {
+      const updatedUser = await api.getMe();
+      const mappedUser = { ...updatedUser, role: updatedUser.role ?? "user" };
+      setUser(mappedUser);
+      setCachedUser(mappedUser);
+    } catch (err) {
+      console.error("Failed to refresh user profile:", err);
+    }
+  }, []);
+
   // ── Derived state ─────────────────────────────────────────────────────
   const role = user?.role ?? null;
   const isAdmin = role === "admin";
@@ -215,8 +244,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         loading,
         login,
         signup,
+        loginWithGithub,
         logout,
         logoutAll,
+        refreshUser,
       }}
     >
       {children}

@@ -48,6 +48,7 @@ def get_application() -> FastAPI:
     from app.routes.security import router as security_router
     from app.routes.tasks import router as tasks_router
     from app.routes.websocket import router as ws_router
+    from app.routes.payment import router as payment_router
 
     application.include_router(health.router)
     application.include_router(auth.router)
@@ -58,6 +59,7 @@ def get_application() -> FastAPI:
     application.include_router(security_router)
     application.include_router(tasks_router)
     application.include_router(ws_router)  # Phase 5: WebSocket
+    application.include_router(payment_router)  # Phase 6: payOS Payment
 
     return application
 

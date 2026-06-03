@@ -22,5 +22,7 @@ redis>=5.0.1
 kombu>=5.3.4
 # ── Phase 4: Observability ──
 prometheus-client>=0.20.0
+# ── Phase 5: payOS Payment ──
+payos>=0.1.0
 
 

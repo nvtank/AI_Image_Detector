@@ -64,6 +64,8 @@ def get_current_user(
         "full_name": user["full_name"],
         "email": user["email"],
         "role": role,
+        "tokens": user.get("tokens", 5),
+        "subscription_tier": user.get("subscription_tier", "free")
     }
 
 

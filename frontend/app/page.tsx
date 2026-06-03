@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Home() {
   const { t } = useLanguage();
+  const { isAdmin } = useAuth();
 
   const stats = [
     { label: t("home.statCleanF1"), value: "98.6%" },
@@ -111,10 +113,12 @@ export default function Home() {
               style={{ padding: "0.85rem 2rem", fontSize: "1rem" }}>
               {t("home.ctaTry")} →
             </Link>
-            <Link href="/dashboard" className="btn-secondary"
-              style={{ padding: "0.85rem 2rem", fontSize: "1rem" }}>
-              {t("home.ctaBenchmark")}
-            </Link>
+            {isAdmin && (
+              <Link href="/dashboard" className="btn-secondary"
+                style={{ padding: "0.85rem 2rem", fontSize: "1rem" }}>
+                {t("home.ctaBenchmark")}
+              </Link>
+            )}
           </div>
 
           {/* Stats */}

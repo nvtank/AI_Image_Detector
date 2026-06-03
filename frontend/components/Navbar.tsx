@@ -7,13 +7,12 @@ import { useLanguage } from "@/context/LanguageContext";
 import NotificationBell from "@/components/NotificationBell";
 
 const publicLinks = [
-  { href: "/dashboard", key: "dashboard" },
   { href: "/about", key: "about" },
 ];
 const userLinks = [
   { href: "/upload", key: "upload" },
   { href: "/history", key: "history" },
-  { href: "/dashboard", key: "dashboard" },
+  { href: "/billing", key: "billing" },
   { href: "/about", key: "about" },
 ];
 const adminLinks = [
@@ -186,6 +185,40 @@ export default function Navbar() {
                       {isAdmin ? t("nav.admin") : t("nav.user")}
                     </span>
                   </div>
+                  {/* Token Status Badge */}
+                  {!isAdmin && (
+                    <Link
+                      href="/billing"
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 4,
+                        fontSize: 12,
+                        fontWeight: 700,
+                        padding: "4px 10px",
+                        borderRadius: "var(--r-sm)",
+                        background: user?.subscription_tier === "pro" 
+                          ? "linear-gradient(135deg, var(--warning-content), var(--primary))"
+                          : user?.subscription_tier === "plus"
+                            ? "var(--primary-pale)"
+                            : "var(--canvas-soft)",
+                        color: user?.subscription_tier === "pro" 
+                          ? "var(--canvas)" 
+                          : "var(--ink)",
+                        textDecoration: "none",
+                        boxShadow: user?.subscription_tier === "pro" ? "0 2px 6px rgba(124, 58, 237, 0.3)" : "none",
+                      }}
+                    >
+                      <span>🪙</span>
+                      <span>
+                        {user?.subscription_tier === "pro"
+                          ? "Pro"
+                          : user?.subscription_tier === "plus"
+                            ? `Plus (${user?.tokens ?? 0})`
+                            : `${user?.tokens ?? 0}`}
+                      </span>
+                    </Link>
+                  )}
 
                   <NotificationBell />
 

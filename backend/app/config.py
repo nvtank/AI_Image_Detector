@@ -34,6 +34,17 @@ class Settings(BaseSettings):
     # RBAC - Admin users (comma-separated email list)
     ADMIN_EMAILS: str = ""
 
+    # GitHub OAuth
+    GITHUB_CLIENT_ID: str = ""
+    GITHUB_CLIENT_SECRET: str = ""
+
+    # SMTP Config (Forgot Password)
+    SMTP_HOST: str = ""
+    SMTP_PORT: int = 587
+    SMTP_USER: str = ""
+    SMTP_PASSWORD: str = ""
+    SMTP_FROM: str = "noreply@ai-image-detector.com"
+
     # Cloudinary
     CLOUDINARY_CLOUD_NAME: str = ""
     CLOUDINARY_API_KEY: str = ""
@@ -49,6 +60,15 @@ class Settings(BaseSettings):
     ENABLE_GEMINI_ANALYSIS: bool = True
     GEMINI_MODEL: str = "gemini-2.5-flash"
     GEMINI_TIMEOUT_SECONDS: int = 20
+
+    # payOS Payment Gateway
+    PAYOS_CLIENT_ID: str = ""
+    PAYOS_API_KEY: str = ""
+    PAYOS_CHECKSUM_KEY: str = ""
+    PAYOS_WEBHOOK_URL: str = ""  # e.g. https://your-ngrok-url/payment/webhook
+    PAYOS_RETURN_URL: str = "http://localhost:3000/payment-success"
+    PAYOS_CANCEL_URL: str = "http://localhost:3000/payment-cancel"
+    PAYOS_DEV_MODE: bool = True  # If True, expose /payment/confirm dev endpoint
 
     model_config = SettingsConfigDict(
         env_file=".env",
