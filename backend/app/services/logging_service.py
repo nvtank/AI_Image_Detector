@@ -97,6 +97,26 @@ class LoggingService:
                 CREATE INDEX IF NOT EXISTS idx_password_reset_token
                 ON password_resets(token)
             ''')
+
+            # payOS payment orders table
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS payment_orders (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER NOT NULL,
+                    order_code INTEGER UNIQUE NOT NULL,
+                    plan TEXT NOT NULL,
+                    amount INTEGER NOT NULL,
+                    status TEXT DEFAULT 'pending',
+                    checkout_url TEXT,
+                    created_at TEXT,
+                    paid_at TEXT,
+                    FOREIGN KEY (user_id) REFERENCES users(id)
+                )
+            ''')
+            cursor.execute('''
+                CREATE INDEX IF NOT EXISTS idx_payment_order_code
+                ON payment_orders(order_code)
+            ''')
             conn.commit()
 
     def _migrate_db(self):
@@ -106,6 +126,7 @@ class LoggingService:
                 ("role", "TEXT DEFAULT 'user'"),
                 ("tokens", "INTEGER DEFAULT 5"),
                 ("subscription_tier", "TEXT DEFAULT 'free'"),
+                ("subscription_expires_at", "TEXT"),
             ],
             "prediction_logs": [
                 ("user_id", "INTEGER"),

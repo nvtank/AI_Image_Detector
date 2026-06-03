@@ -61,6 +61,15 @@ class Settings(BaseSettings):
     GEMINI_MODEL: str = "gemini-2.5-flash"
     GEMINI_TIMEOUT_SECONDS: int = 20
 
+    # payOS Payment Gateway
+    PAYOS_CLIENT_ID: str = ""
+    PAYOS_API_KEY: str = ""
+    PAYOS_CHECKSUM_KEY: str = ""
+    PAYOS_WEBHOOK_URL: str = ""  # e.g. https://your-ngrok-url/payment/webhook
+    PAYOS_RETURN_URL: str = "http://localhost:3000/payment-success"
+    PAYOS_CANCEL_URL: str = "http://localhost:3000/payment-cancel"
+    PAYOS_DEV_MODE: bool = True  # If True, expose /payment/confirm dev endpoint
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
