@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import AuthGuard from "@/components/AuthGuard";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
@@ -32,8 +33,20 @@ export default function BillingPage() {
 }
 
 function BillingContent() {
-  const { user, refreshUser } = useAuth();
+  const { user, refreshUser, isAdmin } = useAuth();
   const { t, locale } = useLanguage();
+  const router = useRouter();
+
+  // If admin, redirect to upload page since admin has no limits/billing
+  useEffect(() => {
+    if (isAdmin) {
+      router.push("/upload");
+    }
+  }, [isAdmin, router]);
+
+  if (isAdmin) {
+    return null;
+  }
 
   // payOS payment state
   const [pendingPayment, setPendingPayment] = useState<PendingPayment | null>(null);

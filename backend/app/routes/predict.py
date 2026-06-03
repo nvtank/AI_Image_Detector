@@ -63,8 +63,8 @@ async def predict_image(
     if len(contents) > MAX_BYTES:
         raise HTTPException(status_code=400, detail=f"File too large. Max {settings.MAX_UPLOAD_SIZE_MB}MB.")
 
-    # Token balance check & deduction
-    if not deduct_user_token(current_user["id"]):
+    # Token balance check & deduction (Bypassed for Admins)
+    if current_user.get("role") != "admin" and not deduct_user_token(current_user["id"]):
         raise HTTPException(
             status_code=402,
             detail="Bạn đã hết lượt phân tích. Vui lòng nạp thêm token hoặc nâng cấp gói cước."
@@ -124,8 +124,8 @@ async def predict_image_url(
     current_user: dict = Depends(get_current_user),
 ):
     """Predict AI image from URL. Requires authentication."""
-    # Token balance check & deduction
-    if not deduct_user_token(current_user["id"]):
+    # Token balance check & deduction (Bypassed for Admins)
+    if current_user.get("role") != "admin" and not deduct_user_token(current_user["id"]):
         raise HTTPException(
             status_code=402,
             detail="Bạn đã hết lượt phân tích. Vui lòng nạp thêm token hoặc nâng cấp gói cước."
@@ -250,15 +250,15 @@ async def predict_image_hybrid(
     if len(contents) > MAX_BYTES:
         raise HTTPException(status_code=400, detail=f"File too large. Max {settings.MAX_UPLOAD_SIZE_MB}MB.")
 
-    # Tier check for Gemini feature
-    if use_gemini and current_user.get("subscription_tier", "free") == "free":
+    # Tier check for Gemini feature (Bypassed for Admins)
+    if use_gemini and current_user.get("role") != "admin" and current_user.get("subscription_tier", "free") == "free":
         raise HTTPException(
             status_code=403,
             detail="Chức năng phân tích lai (Gemini Second Opinion) yêu cầu nâng cấp lên gói Plus hoặc Pro."
         )
 
-    # Token balance check & deduction
-    if not deduct_user_token(current_user["id"]):
+    # Token balance check & deduction (Bypassed for Admins)
+    if current_user.get("role") != "admin" and not deduct_user_token(current_user["id"]):
         raise HTTPException(
             status_code=402,
             detail="Bạn đã hết lượt phân tích. Vui lòng nạp thêm token hoặc nâng cấp gói cước."
@@ -402,8 +402,8 @@ async def predict_hybrid_async(
     """
     import base64
 
-    # Tier check: Async Queue Mode requires Pro tier
-    if current_user.get("subscription_tier", "free") != "pro":
+    # Tier check: Async Queue Mode requires Pro tier (Bypassed for Admins)
+    if current_user.get("role") != "admin" and current_user.get("subscription_tier", "free") != "pro":
         raise HTTPException(
             status_code=403,
             detail="Chế độ Hàng đợi Bất đồng bộ (Async Queue Mode) yêu cầu nâng cấp lên gói Pro."
