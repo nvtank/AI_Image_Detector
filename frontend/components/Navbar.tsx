@@ -19,7 +19,7 @@ const adminLinks = [
   { href: "/upload", key: "upload" },
   { href: "/history", key: "history" },
   { href: "/dashboard", key: "dashboard" },
-  { href: "/admin/security", key: "security" },
+  { href: "/admin", key: "adminPanel" },
   { href: "/about", key: "about" },
 ];
 
