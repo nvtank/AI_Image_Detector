@@ -1,7 +1,7 @@
 /**
  * crop-selector.js — injected into the active tab by background.js
  * Creates a full-screen overlay that lets the user drag-select a region.
- * When the selection is confirmed, sends CROP_AREA_SELECTED to background.
+ * When the selection is confirmed, sends CROP_SELECTED to background.
  */
 (function () {
   // Prevent double-injection
@@ -129,8 +129,8 @@
     cleanup();
 
     chrome.runtime.sendMessage({
-      type: 'CROP_AREA_SELECTED',
-      payload: {
+      type: 'CROP_SELECTED',
+      selection: {
         x: rect.x,
         y: rect.y,
         width: rect.width,

@@ -1,107 +1,206 @@
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
   <meta charset="utf-8">
   <title>AI Image Detector</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="container">
+  <div class="app">
 
-    <!-- Header -->
-    <div class="header">
-      <h2>AI Image Detector</h2>
-      <p id="userEmail" class="user-email hidden"></p>
-    </div>
+    <!-- ═══════════ HEADER ═══════════ -->
+    <header class="hd">
+      <div class="hd-brand">
+        <div class="hd-logo">AI</div>
+        <div>
+          <div class="hd-title">AI Image Detector</div>
+          <div class="hd-sub" id="hd-sub">nvtank.dev</div>
+        </div>
+      </div>
+      <div class="hd-right" id="hd-right">
+        <!-- Filled by JS when logged in: token badge + settings icon -->
+      </div>
+    </header>
 
-    <!-- Auth section (shown when not logged in) -->
-    <div id="authSection">
+    <!-- ═══════════ VIEW: AUTH ═══════════ -->
+    <div id="view-auth" class="view">
       <div class="auth-tabs">
-        <button class="auth-tab active" id="tabLogin">Login</button>
-        <button class="auth-tab" id="tabSignup">Sign Up</button>
+        <button class="atab active" id="tab-login">Đăng nhập</button>
+        <button class="atab" id="tab-signup">Đăng ký</button>
       </div>
 
-      <div id="loginForm">
-        <input type="email" id="loginEmail" placeholder="Email" class="input-field">
-        <input type="password" id="loginPassword" placeholder="Password" class="input-field">
-        <button id="loginBtn" class="btn-primary">Sign In</button>
+      <!-- Login form -->
+      <div id="form-login" class="auth-form">
+        <input type="email"    id="l-email" placeholder="Email" class="inp" autocomplete="email">
+        <input type="password" id="l-pass"  placeholder="Mật khẩu" class="inp" autocomplete="current-password">
+        <button id="btn-login" class="btn-primary">Đăng nhập</button>
+        <div class="auth-divider">hoặc</div>
+        <a href="https://nvtank.dev/login" target="_blank" class="btn-outline">🌐 Đăng nhập trên website</a>
       </div>
 
-      <div id="signupForm" class="hidden">
-        <input type="text" id="signupName" placeholder="Full Name" class="input-field">
-        <input type="email" id="signupEmail" placeholder="Email" class="input-field">
-        <input type="password" id="signupPassword" placeholder="Password (min. 6 chars)" class="input-field">
-        <button id="signupBtn" class="btn-primary">Create Account</button>
+      <!-- Signup form -->
+      <div id="form-signup" class="auth-form hidden">
+        <input type="text"     id="s-name"  placeholder="Họ và tên" class="inp">
+        <input type="email"    id="s-email" placeholder="Email" class="inp" autocomplete="email">
+        <input type="password" id="s-pass"  placeholder="Mật khẩu (tối thiểu 6 ký tự)" class="inp" autocomplete="new-password">
+        <button id="btn-signup" class="btn-primary">Tạo tài khoản</button>
       </div>
 
-      <div id="authError" class="error-box hidden"></div>
+      <div id="auth-err" class="err-box hidden"></div>
     </div>
 
-    <!-- Main section (shown when logged in) -->
-    <div id="mainSection" class="hidden">
+    <!-- ═══════════ VIEW: MAIN ═══════════ -->
+    <div id="view-main" class="view hidden">
 
-      <!-- Capture Area Button (primary CTA) -->
-      <button id="captureBtn" class="btn-capture">
-        📸 Capture Area
-        <span class="btn-sub">Drag to select region on page</span>
-      </button>
-
-      <div class="divider">or upload a file</div>
-
-      <!-- Upload area -->
-      <div class="upload-area" id="uploadArea">
-        <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp" hidden>
-        <div id="previewContainer" style="display:none">
-          <img id="imagePreview" src="" alt="Preview">
+      <!-- User info bar -->
+      <div class="user-bar" id="user-bar">
+        <div class="user-avatar" id="user-avatar">U</div>
+        <div class="user-info">
+          <div class="user-name" id="user-name">User</div>
+          <div class="user-meta">
+            <span class="tier-badge" id="tier-badge">Free</span>
+            <span class="token-count" id="token-count">— tokens</span>
+          </div>
         </div>
-        <div id="placeholderText">
-          <span>Click to upload image</span>
+        <a href="https://nvtank.dev/billing" target="_blank" class="upgrade-btn" id="upgrade-btn" title="Nâng cấp gói">⬆</a>
+      </div>
+
+      <!-- Token warning -->
+      <div id="token-warn" class="warn-box hidden">
+        ⚠ Còn ít token! <a href="https://nvtank.dev/billing" target="_blank">Nạp thêm →</a>
+      </div>
+
+      <!-- Nav tabs -->
+      <div class="nav-tabs">
+        <button class="ntab active" id="ntab-detect" data-tab="detect">🔍 Phát hiện</button>
+        <button class="ntab" id="ntab-history" data-tab="history">📋 Lịch sử</button>
+      </div>
+
+      <!-- ─── Tab: Detect ─── -->
+      <div id="tab-detect" class="tab-content">
+        <!-- Capture area -->
+        <button id="btn-capture" class="btn-capture">
+          <span class="btn-capture-icon">📸</span>
+          <span>
+            <strong>Chụp vùng màn hình</strong>
+            <small>Kéo để chọn vùng trên trang web</small>
+          </span>
+        </button>
+
+        <div class="sep">hoặc tải ảnh lên</div>
+
+        <!-- Upload -->
+        <div class="upload-zone" id="upload-zone">
+          <input type="file" id="file-input" accept="image/jpeg,image/png,image/webp,image/gif" hidden>
+          <div id="upload-placeholder">
+            <div class="upload-icon">📁</div>
+            <div class="upload-text">Click để chọn ảnh</div>
+            <div class="upload-hint">JPG, PNG, WebP, GIF</div>
+          </div>
+          <div id="upload-preview" class="hidden">
+            <img id="preview-img" src="" alt="Preview">
+            <button id="clear-file" class="clear-btn" title="Xóa">✕</button>
+          </div>
         </div>
+
+        <!-- URL input -->
+        <div class="url-row">
+          <input type="url" id="url-input" class="inp inp-sm" placeholder="Hoặc dán URL ảnh...">
+          <button id="btn-url" class="btn-sm">→</button>
+        </div>
+
+        <!-- Options -->
+        <div class="options-row">
+          <label class="toggle-wrap">
+            <input type="checkbox" id="use-gemini" checked>
+            <span class="toggle"></span>
+          </label>
+          <span class="toggle-label">✨ Gemini review</span>
+          <div class="toggle-desc" id="gemini-desc">Phân tích bổ sung bởi Gemini AI</div>
+        </div>
+
+        <button id="btn-analyze" class="btn-analyze" disabled>Phân tích ảnh</button>
       </div>
 
-      <!-- Gemini review checkbox -->
-      <div class="gemini-toggle-container">
-        <label class="toggle-switch">
-          <input type="checkbox" id="extensionUseGemini" checked>
-          <span class="slider round"></span>
-        </label>
-        <span class="toggle-text">✨ Gemini review</span>
+      <!-- ─── Tab: History ─── -->
+      <div id="tab-history" class="tab-content hidden">
+        <div id="history-list">
+          <div class="history-loading" id="history-loading">
+            <div class="mini-spinner"></div> Đang tải lịch sử...
+          </div>
+        </div>
+        <a href="https://nvtank.dev/history" target="_blank" class="view-all-link">Xem tất cả trên website →</a>
       </div>
 
-      <button id="analyzeBtn" disabled>Analyze Image</button>
-
-      <button id="logoutBtn" class="btn-logout">Logout</button>
     </div>
 
-    <!-- Loading -->
-    <div id="loading" class="hidden">
-      <div class="spinner"></div>
-      <p>Analyzing...</p>
+    <!-- ═══════════ VIEW: LOADING ═══════════ -->
+    <div id="view-loading" class="view hidden">
+      <div class="loading-wrap">
+        <div class="spinner"></div>
+        <div class="loading-text">Đang phân tích ảnh...</div>
+        <div class="loading-sub" id="loading-sub">Kết nối với server</div>
+      </div>
     </div>
 
-    <!-- Error -->
-    <div id="errorBox" class="hidden"></div>
-
-    <!-- Result -->
-    <div id="resultBox" class="hidden">
-      <div class="result-header" id="resultHeader">
-        <h1 id="resultLabel">FAKE</h1>
+    <!-- ═══════════ VIEW: RESULT ═══════════ -->
+    <div id="view-result" class="view hidden">
+      <div id="result-header" class="result-hd">
+        <div id="result-label" class="result-label">FAKE</div>
+        <div id="result-sub"   class="result-sub">AI Generated Image</div>
       </div>
       <div class="result-body">
-        <div class="metric">
-          <span class="label">Confidence</span>
-          <span class="value" id="resultConfidence"></span>
+        <!-- Local model -->
+        <div class="section-title" id="result-model-name">PyTorch Model</div>
+        <div class="metric-row">
+          <span class="mk">Confidence</span>
+          <span class="mv" id="r-conf">—</span>
         </div>
-        <div class="metric">
-          <span class="label">Model</span>
-          <span class="value" id="resultModel"></span>
+        <div class="metric-row">
+          <span class="mk">AI Generated</span>
+          <span class="mv red" id="r-fake">—</span>
         </div>
-        <div class="metric">
-          <span class="label">Time</span>
-          <span class="value" id="resultTime"></span>
+        <div class="bar-track"><div class="bar-fill red" id="bar-fake"></div></div>
+        <div class="metric-row">
+          <span class="mk">Authentic</span>
+          <span class="mv green" id="r-real">—</span>
+        </div>
+        <div class="bar-track"><div class="bar-fill green" id="bar-real"></div></div>
+        <div class="result-meta">
+          <span id="r-model">—</span>
+          <span id="r-time">—</span>
+        </div>
+
+        <!-- Gemini section (hidden by default) -->
+        <div id="gemini-section" class="gemini-section hidden">
+          <div class="section-title gemini-title">✨ Gemini Review — <span id="g-label"></span></div>
+          <div class="gemini-reason" id="g-reason"></div>
+          <ul id="g-signals" class="gemini-signals"></ul>
+        </div>
+
+        <!-- Recommendation -->
+        <div id="rec-section" class="rec-box hidden">
+          <span id="rec-text"></span>
         </div>
       </div>
+
+      <!-- Actions -->
+      <div class="result-actions">
+        <button id="btn-back" class="btn-outline-sm">← Phân tích lại</button>
+        <a href="https://nvtank.dev/history" target="_blank" class="btn-outline-sm">📋 Xem lịch sử</a>
+      </div>
     </div>
+
+    <!-- ═══════════ FOOTER ═══════════ -->
+    <footer class="ft">
+      <a href="https://nvtank.dev" target="_blank" class="ft-link">nvtank.dev</a>
+      <span class="ft-sep">·</span>
+      <button id="btn-logout" class="ft-logout hidden">Đăng xuất</button>
+    </footer>
+
+    <!-- Global error -->
+    <div id="global-err" class="global-err hidden"></div>
 
   </div>
 
