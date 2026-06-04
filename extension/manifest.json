@@ -1,37 +1,35 @@
 {
   "manifest_version": 3,
   "name": "AI Image Detector",
-  "version": "2.0.0",
-  "description": "Detect AI-generated images by upload, URL, or screen capture region.",
+  "version": "3.0.0",
+  "description": "Detect AI-generated images by capture, upload, or URL. Synced with nvtank.dev.",
   "action": {
     "default_popup": "popup.html",
     "default_title": "AI Image Detector"
   },
   "permissions": [
     "activeTab",
+    "tabs",
     "scripting",
     "contextMenus",
     "notifications",
     "storage"
   ],
   "host_permissions": [
+    "https://nvtank.dev/*",
     "http://localhost:8000/*"
   ],
   "background": {
-    "scripts": ["background.js"]
+    "service_worker": "background.js"
   },
   "icons": {
-    "128": "icon128.png"
-  },
-  "browser_specific_settings": {
-    "gecko": {
-      "id": "aidetector@nvtank.local",
-      "strict_min_version": "109.0"
-    }
+    "16":  "icons/icon-16.png",
+    "48":  "icons/icon-48.png",
+    "128": "icons/icon-128.png"
   },
   "web_accessible_resources": [
     {
-      "resources": ["content/crop-selector.js", "content/result-overlay.js"],
+      "resources": ["content/crop-selector.js"],
       "matches": ["<all_urls>"]
     }
   ]
