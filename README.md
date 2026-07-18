@@ -1,7 +1,5 @@
 # 🔍 AI Image Detector
 
-![AI Image Detector](https://via.placeholder.com/1000x200.png?text=AI+Image+Detector+-+Hybrid+AI+Vision) <!-- Optional: Replace with your actual project banner -->
-
 > A comprehensive, high-performance system for detecting AI-generated images using State-of-the-Art Deep Learning models (EfficientNetV2, ConvNeXt, ResNet50) integrated with Gemini Multimodal capabilities for advanced explainable AI.
 
 ---
